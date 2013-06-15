@@ -15,7 +15,7 @@ var _ = require('lodash')
 //
 // Required modules.
 //
-var model = require('./lib/model')
+var defaultModel = require('./lib/model')
   , Methods = require('./lib/methods');
 
 //
@@ -36,9 +36,6 @@ function Fossa(options) {
 
   // Store the options.
   this.options = options;
-
-  // Prepare a default model sprinkled with MongoDB methods.
-  this.Model = Backbone.Model.extend(model, new Methods);
 
   // Prepare connection.
   this.init(options.host, options.port, options.mongoclient);
@@ -75,6 +72,21 @@ Fossa.prototype.connect = function connect(fn) {
 
     fn(err, this.client = db);
   }.bind(this));
+};
+
+/**
+ * Prepare a default model sprinkled with MongoDB methods.
+ *
+ * @param {String} collection name
+ * @api public
+ */
+Fossa.prototype.model = function model(collection) {
+  if (!collection) this.emit('error', new Error('Collection missing'));
+
+  return Backbone.Model.extend(
+      defaultModel({ fossa: this, collection: collection })
+    , new Methods
+  );
 };
 
 //
