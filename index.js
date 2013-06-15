@@ -23,7 +23,7 @@ var model = require('./lib/model')
 //
 var fossa = module.exports
   , MongoClient = mongo.MongoClient
-  , Server = mongo.Server
+  , Server = mongo.Server;
 
 /**
  * Constructor.
@@ -38,7 +38,7 @@ function Fossa(options) {
   this.options = options;
 
   // Prepare a default model sprinkled with MongoDB methods.
-  this.Model = Backbone.Model.extend(model, Methods.prototype);
+  this.Model = Backbone.Model.extend(model, new Methods);
 
   // Prepare connection.
   this.init(options.host, options.port, options.mongoclient);
