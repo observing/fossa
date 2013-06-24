@@ -15,7 +15,8 @@ var _ = require('lodash')
 //
 // Required modules.
 //
-var model = require('./lib/collection');
+var collection = require('./lib/collection')
+  , model = require('./lib/model');
 
 //
 // Expose backbone events.
@@ -40,6 +41,10 @@ function Fossa(options) {
 
   // Prepare connection.
   this.init(options.host, options.port, options.mongoclient);
+
+  // Prepare a default model and collection sprinkled with MongoDB proxy methods.
+  this.Model = Backbone.Model.extend(model);
+  this.Collection = collection({ fossa: this });
 }
 
 // Allow event emitting from Fossa.
@@ -83,23 +88,6 @@ Fossa.prototype.connect = function connect(database, collection, fn) {
     self.client = client.db(database);
     fn(err, self.client.collection(collection));
   });
-};
-
-/**
- * Create a new collection instance.
- *
- * @param {String} name collection name
- * @param {Object} options
- * @api public
- */
-Fossa.prototype.collection = function collection(name, options) {
-  options = options || {};
-
-  // Prepare a default collection sprinkled with MongoDB proxy methods.
-  options.collection = name;
-  options.fossa = this;
-
-  return model(options);
 };
 
 //
