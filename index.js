@@ -35,13 +35,13 @@ function Fossa(options) {
   // Default to localhost, standard port and the native C++ BSON parser.
   options.host = options.host || 'localhost';
   options.port = options.port || 27017;
-  options.mongoclient = options.mongoclient || { native_parser: true };
+  options.options = options.options || { native_parser: true };
 
   // Store the options.
   this.options = options;
 
   // Prepare connection.
-  this.init(options.host, options.port, options.mongoclient);
+  this.init(options.host, options.port, options.options);
 
   // Prepare a default model and collection sprinkled with MongoDB proxy methods.
   this.Model = Backbone.Model.extend(model);
