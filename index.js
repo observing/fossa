@@ -28,6 +28,7 @@ var fossa = module.exports
 /**
  * Constructor of Fossa.
  *
+ * @Constructor
  * @api public
  */
 function Fossa(options) {
@@ -67,27 +68,50 @@ Fossa.prototype.init = function init(host, port, options) {
 /**
  * Connect to MongoDb, otherwise return already opened connection.
  *
+ * @param {String} database name
+ * @param {String} collection name
  * @param {Function} fn callback
  * @api public
  */
 Fossa.prototype.connect = function connect(database, collection, fn) {
-  var self = this;
+  var self = this
+    , client;
+
+  // If no collection string is supplied it must be a callback.
+  if (typeof collection === 'function') {
+    fn = collection;
+    collection = null;
+  }
 
   // If no database was set before mitigating to the collection, fail.
   if (!database) fn(new Error('Provide database name with #use before saving.'));
 
   // If there is a connected client simply switch the pool over to another database.
   if (self.client) return process.nextTick(function switchClient() {
-    fn(null, self.client.db(database).collection(collection));
+    client = self.client.db(database);
+
+    // Only set collection if supplied
+    fn(null, collection ? self.collection(collection) : client);
   });
 
   // Open a new connection to a MongoDB instance.
   self.mongoclient.open(function(err, client) {
     if (err) return self.emit('error', err);
 
-    self.client = client.db(database);
-    fn(err, self.client.collection(collection));
+    self.client = client = client.db(database);
+    fn(err, collection ? self.collection(collection) : client);
   });
+};
+
+/**
+ * Switch to the supplied collection.
+ *
+ * @param {String} name collection name
+ * @return {Object} MongoDB collection methods
+ * @api public
+ */
+Fossa.prototype.collection = function collection(name) {
+  return this.client.collection(name);
 };
 
 //
