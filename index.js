@@ -57,7 +57,7 @@ Fossa.prototype.__proto__ = EventEmitter.prototype;
  * @param {String} host MongoDB host
  * @param {Number} port MongoDB port, usually 27017
  * @param {Object} options MongoDB client options
- * @return this
+ * @return {Fossa} fluent interface
  * @api public
  */
 Fossa.prototype.init = function init(host, port, options) {
@@ -74,8 +74,7 @@ Fossa.prototype.init = function init(host, port, options) {
  * @api public
  */
 Fossa.prototype.connect = function connect(database, collection, fn) {
-  var self = this
-    , client;
+  var self = this;
 
   // If no collection string is supplied it must be a callback.
   if (typeof collection === 'function') {
@@ -87,19 +86,25 @@ Fossa.prototype.connect = function connect(database, collection, fn) {
   if (!database) fn(new Error('Provide database name with #use before saving.'));
 
   // If there is a connected client simply switch the pool over to another database.
-  if (self.client) return process.nextTick(function switchClient() {
-    client = self.client.db(database);
+  if (self.client) {
+    return process.nextTick(function switchClient() {
+      self.client = self.client.db(database);
 
-    // Only set collection if supplied
-    fn(null, collection ? self.collection(collection) : client);
-  });
+      // If a collection was supplied defer in a safe manner.
+      if (collection) return self.collection(collection, fn);
+      fn(null, self.client);
+    });
+  }
 
   // Open a new connection to a MongoDB instance.
   self.mongoclient.open(function(err, client) {
     if (err) return self.emit('error', err);
 
-    self.client = client = client.db(database);
-    fn(err, collection ? self.collection(collection) : client);
+    self.client = client.db(database);
+
+    // If a collection was supplied defer in a safe manner.
+    if (collection) return self.collection(collection, fn);
+    fn(err, self.client);
   });
 };
 
@@ -107,11 +112,13 @@ Fossa.prototype.connect = function connect(database, collection, fn) {
  * Switch to the supplied collection.
  *
  * @param {String} name collection name
- * @return {Object} MongoDB collection methods
+ * @param {Function} fn callback
+ * @return {Fossa} fluent interface
  * @api public
  */
-Fossa.prototype.collection = function collection(name) {
-  return this.client.collection(name);
+Fossa.prototype.collection = function collection(name, fn) {
+  this.client.collection(name, fn);
+  return this;
 };
 
 //
