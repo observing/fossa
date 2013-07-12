@@ -40,6 +40,9 @@ function Fossa(options) {
   // Store the options.
   this.options = options;
 
+  // Also export the orginal mongo module so it can be used easily.
+  this.mongo = mongo;
+
   // Prepare connection.
   this.init(options.host, options.port, options.options);
 
