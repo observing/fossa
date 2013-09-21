@@ -2,7 +2,7 @@
 
 Backbone powered model interface to MongoDB, thin wrapper around MongoDB. Fossa
 uses the API provided by [Backbone][backbone] and proxies it methods to the
-[native MongoDB driver][mongodb]. 
+[native MongoDB driver][mongodb].
 
 Fossa provides first class database and collection control. This great power
 comes with responsibilities. The developer should manage database switches,
@@ -12,7 +12,7 @@ interface for interaction with the objects in MongoDB.
 ## Installation
 
 ```sh
-npm install fossa -save
+npm install fossa --save
 ```
 
 ## Tests
@@ -26,14 +26,14 @@ Generate api docs with JSDoc!!
 
 Create a new Fossa instance by calling the constructor. After construction Fossa
 will expose a model and collection sprinkled with mongoDB proxy methods. The
-connection will be prepared and exposed through `Fossa.mongoclient`. The native 
-C++ parser of MongoDB will be enabled by default. 
+connection will be prepared and exposed through `Fossa.mongoclient`. The native
+C++ parser of MongoDB will be enabled by default.
 
 ```js
 var fossa = new Fossa(
     host: '127.0.0.1' // defaults to localhost
   , port: '1337' // defaults to 27017
-  , options: { native_parser: true } // optional options 
+  , options: { native_parser: true } // optional options
 );
 ```
 
@@ -46,21 +46,21 @@ proxied methods. Initialise the Collection before use.
 ```js
 var Account = fossa.Collection.extend({
         name: 'accounts'
-      , database: 'observer' 
+      , database: 'observer'
     });
   , account = new Account;
 ```
 
 Fossa Collections have no required keys. However, before saving models a
-database should always be provided. This can be done by calling `use`, 
-consider the following example. 
+database should always be provided. This can be done by calling `use`,
+consider the following example.
 
 ```js
 var Account = new fossa.Collection;
 account.use('observer').save(...);
 ```
 
-### Methods 
+### Methods
 
 [backbone]: http://backbonejs.org/
-[mongodb]: https://github.com/christkv/node-mongodb-native/  
+[mongodb]: https://github.com/christkv/node-mongodb-native/
