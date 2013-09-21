@@ -31,5 +31,11 @@
     "async": "0.2.x"
   },
   "devDependencies": {
+    "chai": "1.7.x",
+    "mocha": "1.11.x",
+    "pre-commit": "0.0.x",
+    "sinon": "1.7.x",
+    "sinon-chai": "2.4.x"
   }
 }
+
