@@ -29,22 +29,23 @@ var fossa = module.exports
  * Constructor of Fossa.
  *
  * @Constructor
+ * @param {Object} options
  * @api public
  */
 function Fossa(options) {
-  // Default to localhost, standard port and the native C++ BSON parser.
-  options.host = options.host || 'localhost';
-  options.port = options.port || 27017;
-  options.options = options.options || { native_parser: true };
-
   // Store the options.
-  this.options = options;
+  this.options = options = this.options(options || {});
+  this.plugins = Object.create(null);
 
   // Also export the orginal mongo module so it can be used easily.
   this.mongo = mongo;
 
   // Prepare connection.
-  this.init(options.host, options.port, options.options);
+  this.init(
+    options('host', 'localhost'),
+    options('port', 27017),
+    options
+  );
 
   // Prepare a default model and collection sprinkled with MongoDB proxy methods.
   this.Model = Backbone.Model.extend(model);
@@ -53,6 +54,19 @@ function Fossa(options) {
 
 // Allow event emitting from Fossa.
 Fossa.prototype.__proto__ = EventEmitter.prototype;
+
+/**
+ * Checks if options exists.
+ *
+ * @param {Object} obj
+ * @returns {Function}
+ * @api private
+ */
+Fossa.prototype.options = function options(obj) {
+  return function get(key, backup) {
+    return key in obj ? obj[key] : backup;
+  };
+};
 
 /**
  * Initialize a MongoClient and Server.
@@ -122,6 +136,59 @@ Fossa.prototype.connect = function connect(database, collection, fn) {
 Fossa.prototype.collection = function collection(name, fn) {
   this.client.collection(name, fn);
   return this;
+};
+
+/**
+ * Register a new plugin.
+ *
+ * ```js
+ * fossa.use('name', function calculate(fossa, options) {
+ *  // do stuff
+ * },
+ * ```
+ *
+ * @param {String} name The name of the plugin.
+ * @param {Function} plugin The plugin with function that holds alternative logic
+ * @api public
+ */
+Fossa.prototype.use = function use(name, plugin) {
+  if ('object' === typeof name && !plugin) {
+    plugin = name;
+    name = plugin.name;
+  }
+
+  if (!name) throw new Error('Plugin should be specified with a name');
+  if ('string' !== typeof name) throw new Error('Plugin names should be a string');
+  if ('string' === typeof plugin) plugin = require(plugin);
+
+  //
+  // Plugin accepts a function only.
+  //
+  if ('function' !== typeof plugin) throw new Error('Plugin should be a function');
+  if (name in this.plugins) throw new Error('The plugin name was already defined');
+
+  this.plugins[name] = plugin;
+  plugin.call(this, this, this.options);
+  return this;
+};
+
+/**
+ * Create a new Fossa server.
+ *
+ * @param {String} host Server location
+ * @param {Number} port Port number
+ * @param {Object} options Configuration.
+ * @returns {Fossa}
+ * @api public
+ */
+Fossa.create = function create(host, port, options) {
+  options = options || {};
+
+  options.host = host = host || 'localhost';
+  options.port = port = port || 27017;
+  options.native_parser = true;
+
+  return new Fossa(options);
 };
 
 //
