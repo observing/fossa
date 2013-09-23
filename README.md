@@ -30,11 +30,11 @@ connection will be prepared and exposed through `Fossa.mongoclient`. The native
 C++ parser of MongoDB will be enabled by default.
 
 ```js
-var fossa = new Fossa(
+var fossa = new Fossa({
     host: '127.0.0.1' // defaults to localhost
   , port: '1337' // defaults to 27017
   , options: { native_parser: true } // optional options
-);
+});
 ```
 
 ### Collections
