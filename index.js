@@ -49,7 +49,9 @@ function Fossa(options) {
   this.Collection = collection(this);
 }
 
+//
 // Allow event emitting from Fossa.
+//
 Fossa.prototype.__proto__ = EventEmitter.prototype;
 
 /**
@@ -76,6 +78,7 @@ Fossa.prototype.options = function options(obj) {
  */
 Fossa.prototype.init = function init(host, port, options) {
   this.mongoclient = new MongoClient(new Server(host, port, options));
+
   return this;
 };
 
@@ -85,10 +88,11 @@ Fossa.prototype.init = function init(host, port, options) {
  * @param {String} database name
  * @param {String} collection name
  * @param {Function} fn callback
+ * @return {Fossa} fluent interface
  * @api public
  */
 Fossa.prototype.connect = function connect(database, collection, fn) {
-  var self = this;
+  var fossa = this;
 
   //
   // If no collection string is supplied it must be a callback.
@@ -106,32 +110,34 @@ Fossa.prototype.connect = function connect(database, collection, fn) {
   //
   // If there is a connected client simply switch the pool over to another database.
   //
-  if (self.client) {
+  if (fossa.client) {
     return process.nextTick(function switchClient() {
-      self.client = self.client.db(database);
+      fossa.client = fossa.client.db(database);
 
       //
       // If a collection was supplied defer in a safe manner.
       //
-      if (collection) return self.collection(collection, fn);
-      fn(null, self.client);
+      if (collection) return fossa.collection(collection, fn);
+      fn(null, fossa.client);
     });
   }
 
   //
   // Open a new connection to a MongoDB instance.
   //
-  self.mongoclient.open(function(err, client) {
+  fossa.mongoclient.open(function(err, client) {
     if (err) return fn(err);
 
-    self.client = client.db(database);
+    fossa.client = client.db(database);
 
     //
     // If a collection was supplied defer in a safe manner.
     //
-    if (collection) return self.collection(collection, fn);
-    fn(err, self.client);
+    if (collection) return fossa.collection(collection, fn);
+    fn(err, fossa.client);
   });
+
+  return this;
 };
 
 /**
@@ -143,12 +149,12 @@ Fossa.prototype.connect = function connect(database, collection, fn) {
  * @api public
  */
 Fossa.prototype.collection = function collection(name, fn) {
-  var self = this;
+  var fossa = this;
 
   this.client.collection(name, function switched(err, collection) {
     if (err) return fn(err);
 
-    self.client.store = collection;
+    fossa.client.store = collection;
     fn(err, collection);
   });
 
@@ -186,6 +192,7 @@ Fossa.prototype.use = function use(name, plugin) {
 
   this.plugins[name] = plugin;
   plugin.call(this, this, this.options);
+
   return this;
 };
 
@@ -217,5 +224,3 @@ Fossa.mongo = mongo;
 // Expose the module.
 //
 module.exports = Fossa;
-
-
