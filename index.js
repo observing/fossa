@@ -90,33 +90,45 @@ Fossa.prototype.init = function init(host, port, options) {
 Fossa.prototype.connect = function connect(database, collection, fn) {
   var self = this;
 
+  //
   // If no collection string is supplied it must be a callback.
+  //
   if (typeof collection === 'function') {
     fn = collection;
     collection = null;
   }
 
+  //
   // If no database was set before mitigating to the collection, fail.
+  //
   if (!database) fn(new Error('Provide database name with #use before saving.'));
 
+  //
   // If there is a connected client simply switch the pool over to another database.
+  //
   if (self.client) {
     return process.nextTick(function switchClient() {
       self.client = self.client.db(database);
 
+      //
       // If a collection was supplied defer in a safe manner.
+      //
       if (collection) return self.collection(collection, fn);
       fn(null, self.client);
     });
   }
 
+  //
   // Open a new connection to a MongoDB instance.
+  //
   self.mongoclient.open(function(err, client) {
-    if (err) return self.emit('error', err);
+    if (err) return fn(err);
 
     self.client = client.db(database);
 
+    //
     // If a collection was supplied defer in a safe manner.
+    //
     if (collection) return self.collection(collection, fn);
     fn(err, self.client);
   });
@@ -131,7 +143,15 @@ Fossa.prototype.connect = function connect(database, collection, fn) {
  * @api public
  */
 Fossa.prototype.collection = function collection(name, fn) {
-  this.client.collection(name, fn);
+  var self = this;
+
+  this.client.collection(name, function switched(err, collection) {
+    if (err) return fn(err);
+
+    self.client.store = collection;
+    fn(err, collection);
+  });
+
   return this;
 };
 

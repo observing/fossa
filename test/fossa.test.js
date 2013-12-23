@@ -69,11 +69,31 @@ describe('Fossa', function () {
     expect(fossa.options('host')).to.equal('127.0.0.1');
   });
 
-  it('#connect to mongoDB or returns opened connection from the pool', function (done) {
-    expect(db.client).to.equal(undefined);
-    db.connect('fossa', function () {
-      expect(db.client).to.be.an('object');
-      done();
+  describe('#connect', function () {
+    it('to mongoDB or returns opened connection from the pool', function (done) {
+      expect(db.client).to.equal(undefined);
+      db.connect('fossa', function () {
+        expect(db.client).to.be.an('object');
+        done();
+      });
+    });
+
+    it('switches to the proper collection', function (done) {
+      expect(db.client).to.equal(undefined);
+      db.connect('fossa', 'test', function () {
+        db.client.store.findOne({b:1}, function (err, item) {
+          expect(err).to.equal(null);
+          expect(item.b).to.equal(1);
+
+          db.connect('fossa', 'test1', function (err, item) {
+            db.client.store.findOne({f:1}, function (err, item) {
+              expect(err).to.equal(null);
+              expect(item.f).to.equal(1);
+              done();
+            });
+          });
+        });
+      });
     });
   });
 });
