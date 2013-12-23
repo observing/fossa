@@ -37,9 +37,6 @@ function Fossa(options) {
   this.options = options = this.options(options || {});
   this.plugins = Object.create(null);
 
-  // Also export the orginal mongo module so it can be used easily.
-  this.mongo = mongo;
-
   // Prepare connection.
   this.init(
     options('host', 'localhost'),
@@ -49,7 +46,7 @@ function Fossa(options) {
 
   // Prepare a default model and collection sprinkled with MongoDB proxy methods.
   this.Model = Backbone.Model.extend(model);
-  this.Collection = collection({ fossa: this });
+  this.Collection = collection(this);
 }
 
 // Allow event emitting from Fossa.
@@ -192,6 +189,13 @@ Fossa.create = function create(host, port, options) {
 };
 
 //
+// Also export the orginal mongo module so it can be used easily.
+//
+Fossa.mongo = mongo;
+
+//
 // Expose the module.
 //
 module.exports = Fossa;
+
+

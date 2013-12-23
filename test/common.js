@@ -8,9 +8,11 @@ chai.use(sinonChai);
 chai.Assertion.includeStack = true;
 
 //
-// Expose Fossa
+// Expose Fossa and submodules.
 //
 exports.Fossa = require('../');
+exports.Model = require('../lib/model');
+exports.Collection = require('../lib/collection');
 
 //
 // Expose our assertations.
