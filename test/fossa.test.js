@@ -129,6 +129,20 @@ describe('Fossa', function () {
 
       expect(plugin).to.throw('Plugin should be a function');
     });
+  });
 
+  describe('#collection', function () {
+    it('switches the current active collection on the client', function (done) {
+      db.connect('fossa', function () {
+        db.collection('test', function () {
+          expect(db.client.store).to.be.an('object');
+          db.client.store.findOne({b:1}, function (err, item) {
+            expect(err).to.equal(null);
+            expect(item.b).to.equal(1);
+            done();
+          });
+        });
+      });
+    });
   });
 });
