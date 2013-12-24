@@ -45,7 +45,7 @@ function Fossa(options) {
   );
 
   // Prepare a default model and collection sprinkled with MongoDB proxy methods.
-  this.Model = Backbone.Model.extend(model);
+  this.Model = model;
   this.Collection = collection(this);
 }
 
