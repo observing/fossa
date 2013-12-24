@@ -96,4 +96,21 @@ describe('Fossa', function () {
       });
     });
   });
+
+  describe('#use', function () {
+    it('adds plugins to the interface', function (done) {
+      db.use('pluggable', function pluggable(fossa, options) {
+        expect(fossa).to.an.instanceof(Fossa);
+        done();
+      });
+    });
+
+    it('passes options to the plugin', function (done) {
+      var db = new Fossa({ host: '127.0.0.1' });
+      db.use('pluggable', function pluggable(fossa, options) {
+        expect(options('host')).to.equal('127.0.0.1');
+        done();
+      });
+    });
+  });
 });
