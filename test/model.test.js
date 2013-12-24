@@ -37,13 +37,23 @@ describe('Fossa Model', function () {
     expect(custom.test()).to.equal(true);
   });
 
-  it('has a unique mongoDB ObjectID by default', function () {
+  it('maps _id as internal id', function () {
     var id = new ObjectID
       , model = new db.Model({ _id: id });
 
     expect(model).to.be.an('object');
     expect(model.id).to.equal(id);
     expect(model.attributes).to.have.property('_id', id);
+  });
+
+  it('sets a unique mongoDB ObjectID by default', function () {
+    var model = new db.Model;
+    expect(model.id).to.be.an.instanceof(ObjectID);
+  });
+
+  it('sets a unique mongoDB ObjectID if ID is not of type ObjectID', function () {
+    var model = new db.Model({ _id: 'falseID' });
+    expect(model.id).to.be.an.instanceof(ObjectID);
   });
 });
 
