@@ -113,5 +113,22 @@ describe('Fossa', function () {
         done();
       });
     });
+
+    it('throws an error when an invalid name is provided', function () {
+      var plugin = function () {
+        db.use({}, function pluggable(fossa, options) { });
+      };
+
+      expect(plugin).to.throw('Plugin names should be a string');
+    });
+
+    it('throws an error when the plugin is not a callable function', function () {
+      var plugin = function () {
+        db.use('pluggable', {});
+      };
+
+      expect(plugin).to.throw('Plugin should be a function');
+    });
+
   });
 });
