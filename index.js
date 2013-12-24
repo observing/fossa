@@ -141,6 +141,19 @@ Fossa.prototype.connect = function connect(database, collection, fn) {
 };
 
 /**
+ * Close the connection with the database.
+ *
+ * @param {Function} fn callback
+ * @return {Fossa} fluent interface
+ * @api public
+ */
+Fossa.prototype.close = function close(fn) {
+  this.client.close(fn);
+
+  return this;
+};
+
+/**
  * Switch to the supplied collection.
  *
  * @param {String} name collection name
