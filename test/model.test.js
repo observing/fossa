@@ -56,5 +56,3 @@ describe('Fossa Model', function () {
     expect(model.id).to.be.an.instanceof(ObjectID);
   });
 });
-
-
