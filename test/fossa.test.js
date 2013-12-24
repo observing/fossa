@@ -101,6 +101,7 @@ describe('Fossa', function () {
     it('adds plugins to the interface', function (done) {
       db.use('pluggable', function pluggable(fossa, options) {
         expect(fossa).to.an.instanceof(Fossa);
+        expect(db.plugins).to.have.property('pluggable');
         done();
       });
     });
