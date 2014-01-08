@@ -8,18 +8,17 @@ var EventEmitter = require('events').EventEmitter;
 //
 // Third-party modules.
 //
-var _ = require('lodash')
-  , mongo = require('mongodb')
-  , Backbone = require('backbone');
+var mongo = require('mongodb');
 
 //
 // Required modules.
 //
-var collection = require('./lib/collection')
+var persistence = require('./lib/persistence')
+  , collection = require('./lib/collection')
   , model = require('./lib/model');
 
 //
-// Expose backbone events.
+// References to mongo logic and export Fossa.
 //
 var fossa = module.exports
   , MongoClient = mongo.MongoClient
