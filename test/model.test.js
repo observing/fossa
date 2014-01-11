@@ -37,6 +37,14 @@ describe('Fossa Model', function () {
     expect(custom.test()).to.equal(true);
   });
 
+  it('has a reference to the Fossa instance', function () {
+    var model = new db.Model;
+
+    expect(model.fossa).to.equal(db);
+    expect(model.fossa).to.be.a('object');
+    expect(model.fossa).to.be.an.instanceof(Fossa);
+  });
+
   it('maps _id as internal id', function () {
     var id = new ObjectID
       , model = new db.Model({ _id: id });
@@ -46,13 +54,23 @@ describe('Fossa Model', function () {
     expect(model.attributes).to.have.property('_id', id);
   });
 
-  it('sets a unique mongoDB ObjectID by default', function () {
+  it('sets a unique MongoDB ObjectID by default', function () {
     var model = new db.Model;
     expect(model.id).to.be.an.instanceof(ObjectID);
   });
 
-  it('sets a unique mongoDB ObjectID if ID is not of type ObjectID', function () {
+  it('sets a unique MongoDB ObjectID if ID is not of type ObjectID', function () {
     var model = new db.Model({ _id: 'falseID' });
     expect(model.id).to.be.an.instanceof(ObjectID);
+  });
+
+  it('can be stored in MongoDB if it has a collection reference', function (done) {
+    new db.Model({
+      urlRoot: 'users',
+      username: 'test'
+    }).use('test').sync(function synced(err, result) {
+      console.log(err, result);
+      done();
+    });
   });
 });

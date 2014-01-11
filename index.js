@@ -44,8 +44,8 @@ function Fossa(options) {
   );
 
   // Prepare a default model and collection sprinkled with MongoDB proxy methods.
-  this.Model = model;
-  this.Collection = collection(this);
+  this.Model = model(this, options);
+  this.Collection = collection(this, options);
 }
 
 //
