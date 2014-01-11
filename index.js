@@ -13,8 +13,7 @@ var mongo = require('mongodb');
 //
 // Required modules.
 //
-var persistence = require('./lib/persistence')
-  , collection = require('./lib/collection')
+var collection = require('./lib/collection')
   , model = require('./lib/model');
 
 //
@@ -34,7 +33,7 @@ var fossa = module.exports
 function Fossa(options) {
   // Store the options.
   this.options = options = this.options(options || {});
-  this.plugins = Object.create(null);
+  this.plugins = {};
 
   // Prepare connection.
   this.init(
@@ -44,8 +43,8 @@ function Fossa(options) {
   );
 
   // Prepare a default model and collection sprinkled with MongoDB proxy methods.
-  this.Model = model(this, options);
-  this.Collection = collection(this, options);
+  this.Model = model(this);
+  this.Collection = collection(this);
 }
 
 //

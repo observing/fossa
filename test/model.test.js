@@ -65,11 +65,12 @@ describe('Fossa Model', function () {
   });
 
   it('can be stored in MongoDB if it has a collection reference', function (done) {
-    new db.Model({
-      urlRoot: 'users',
+    var model = new db.Model({
       username: 'test'
-    }).use('test').sync(function synced(err, result) {
-      console.log(err, result);
+    });
+
+    model.urlRoot = 'users';
+    model.use('test').sync(function synced(err, result) {
       done();
     });
   });
