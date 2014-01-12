@@ -14,6 +14,7 @@ chai.Assertion.includeStack = true;
 exports.Fossa = require('../');
 exports.Model = require('../lib/model');
 exports.Collection = require('../lib/collection');
+exports.db = new mongo.Db('fossa', new mongo.Server('localhost', 27017), {w:1});
 
 //
 // Insert test content in the database.
