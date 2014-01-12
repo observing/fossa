@@ -12,7 +12,10 @@ describe('Fossa Model', function () {
   // Establish connection to db
   //
   before(function (done) {
-    common.prepare(done);
+    db.open(function(err, db) {
+      db = db;
+      common.prepare(done);
+    });
   });
 
   after(function (done) {
@@ -66,18 +69,33 @@ describe('Fossa Model', function () {
   });
 
   it('can be stored in MongoDB if it has a collection reference by urlRoot', function (done) {
-    var model = new fossa.Model({
-      username: 'test'
-    });
+    var model = new fossa.Model({ username: 'test' });
 
     model.urlRoot = 'users';
     model.use('fossa').sync(function synced(err, result) {
-      db.open(function(err, db) {
-        db.collection('users').findOne({ _id: model.id }, function (err, item) {
+      db.collection('users').findOne({ _id: model.id }, function (err, item) {
+        expect(err).to.equal(null);
+        expect(item).to.have.property('_id');
+        expect(item._id.toString()).to.equal(model.id.toString());
+        expect(item).to.have.property('username', 'test');
+        done();
+      });
+    });
+  });
+
+  it('switches to PUT if the model with ObjectID exists', function (done) {
+    var id = new ObjectID
+      , model = new fossa.Model({ _id: id, username: 'test' });
+
+    model.urlRoot = 'users';
+    model.use('fossa').sync(function synced(err, result) {
+      model.set('username', 'changed');
+      model.sync(function synced(err, result) {
+        db.collection('users').findOne({ _id: id }, function (err, item) {
           expect(err).to.equal(null);
           expect(item).to.have.property('_id');
-          expect(item._id.toString()).to.equal(model.id.toString());
-          expect(item).to.have.property('username', 'test');
+          expect(item._id.toString()).to.equal(id.toString());
+          expect(item).to.have.property('username', 'changed');
           done();
         });
       });
