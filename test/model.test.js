@@ -72,7 +72,7 @@ describe('Fossa Model', function () {
     var model = new fossa.Model({ username: 'test' });
 
     model.urlRoot = 'users';
-    model.use('fossa').sync(function synced(err, result) {
+    model.use('fossa').sync().done(function synced(err, result) {
       db.collection('users').findOne({ _id: model.id }, function (err, item) {
         expect(err).to.equal(null);
         expect(item).to.have.property('_id');
@@ -88,9 +88,9 @@ describe('Fossa Model', function () {
       , model = new fossa.Model({ _id: id, username: 'test' });
 
     model.urlRoot = 'users';
-    model.use('fossa').sync(function synced(err, result) {
+    model.use('fossa').sync().done(function synced(err, result) {
       model.set('username', 'changed');
-      model.sync(function synced(err, result) {
+      model.sync().done(function synced(err, result) {
         db.collection('users').findOne({ _id: id }, function (err, item) {
           expect(err).to.equal(null);
           expect(item).to.have.property('_id');
