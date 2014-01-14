@@ -68,7 +68,7 @@ describe('Fossa Model', function () {
     expect(model.id).to.be.an.instanceof(ObjectID);
   });
 
-  it('can be stored in MongoDB if it has a collection reference by urlRoot', function (done) {
+  it('can be stored in MongoDB by sync with urlRoot property', function (done) {
     var model = new fossa.Model({ username: 'test' });
 
     model.urlRoot = 'users';
