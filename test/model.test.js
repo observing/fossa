@@ -157,4 +157,41 @@ describe('Fossa Model', function () {
         });
     });
   });
+
+  describe('#save', function () {
+    it('Updates existing model with changed attributes if patch:true', function (done) {
+      var model = new fossa.Model({'username': 'test'});
+
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .sync()
+        .done(function first() {
+          model
+            .save({ username: 'patch' }, { patch: true })
+            .done(function synced(err, result) {
+              db.collection('users').findOne({ _id: model.id }, function (err, item) {
+                expect(item.username).to.equal('patch');
+                done();
+              });
+            });
+        });
+    });
+
+    it('Silently fails on new model if patch:true', function (done) {
+      var model = new fossa.Model;
+
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .save({ username: 'patch' }, { patch: true })
+        .done(function synced(err, n, result) {
+          expect(n).to.equal(0);
+          expect(err).to.equal(null);
+          expect(result.updatedExisting).to.equal(false);
+          done();
+        });
+    });
+
+  });
 });
