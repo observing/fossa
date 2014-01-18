@@ -159,13 +159,28 @@ describe('Fossa Model', function () {
   });
 
   describe('#save', function () {
-    it('Updates existing model with changed attributes if patch:true', function (done) {
+    it('Saves new model by default', function (done) {
+      var model = new fossa.Model({'username': 'save'});
+
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .save()
+        .done(function () {
+          db.collection('users').findOne({ _id: model.id }, function (err, item) {
+            expect(item).to.have.property('username', 'save');
+            done();
+          });
+        });
+    });
+
+   it('Updates existing model with changed attributes if patch:true', function (done) {
       var model = new fossa.Model({'username': 'test'});
 
       model
         .define('urlRoot','users')
         .use('fossa')
-        .sync()
+        .save()
         .done(function first() {
           model
             .save({ username: 'patch' }, { patch: true })
@@ -178,17 +193,17 @@ describe('Fossa Model', function () {
         });
     });
 
-    it('Silently fails on new model if patch:true', function (done) {
+
+    it('Defaults to CREATE on new model if patch:true', function (done) {
       var model = new fossa.Model;
 
       model
         .define('urlRoot','users')
         .use('fossa')
         .save({ username: 'patch' }, { patch: true })
-        .done(function synced(err, n, result) {
-          expect(n).to.equal(0);
-          expect(err).to.equal(null);
-          expect(result.updatedExisting).to.equal(false);
+        .done(function synced(err, items) {
+          expect(items.length).to.equal(1);
+          expect(items[0]).to.have.property('username', 'patch');
           done();
         });
     });
