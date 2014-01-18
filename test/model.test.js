@@ -193,7 +193,6 @@ describe('Fossa Model', function () {
         });
     });
 
-
     it('Defaults to CREATE on new model if patch:true', function (done) {
       var model = new fossa.Model;
 
@@ -207,6 +206,5 @@ describe('Fossa Model', function () {
           done();
         });
     });
-
   });
 });
