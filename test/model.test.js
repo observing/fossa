@@ -58,6 +58,19 @@ describe('Fossa Model', function () {
     expect(model.attributes).to.have.property('_id', id);
   });
 
+  it('refreshed stored reference on ID change', function (done) {
+    var model = new fossa.Model();
+
+    model.on('change:_id', function (model, id) {
+      expect(id).to.be.instanceof(ObjectID);
+      expect(model._stored).to.be.equal(false);
+      expect(model.id).to.be.equal(id);
+      done();
+    });
+
+    model.set('_id', new ObjectID);
+  });
+
   it('sets a unique MongoDB ObjectID by default', function () {
     var model = new fossa.Model;
     expect(model.id).to.be.an.instanceof(ObjectID);
