@@ -156,6 +156,60 @@ describe('Fossa Model', function () {
           });
         });
     });
+
+    it('deletes the model by ObjectID when called with DELETE', function (done) {
+      var model = new fossa.Model({ username: 'not here' });
+
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .sync()
+        .done(function synced(err, result) {
+          model
+            .sync('delete')
+            .done(function deleted(err, n) {
+              expect(err).to.equal(null);
+              expect(n).to.equal(1);
+              db.collection('users').findOne({ _id: model.id }, function (err, item) {
+                expect(err).to.equal(null);
+                expect(item).to.equal(null);
+                done();
+              });
+            });
+        });
+    });
+  });
+
+  describe('#destroy', function () {
+    it('deletes the model by ObjectID', function (done) {
+      var model = new fossa.Model({ username: 'not here' });
+
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .sync()
+        .done(function synced(err, result) {
+          model.destroy().done(function deleted(err, n) {
+            expect(err).to.equal(null);
+            expect(n).to.equal(1);
+            done();
+          });
+        });
+    });
+
+    it('returns zero if no model was deleted', function (done) {
+      var model = new fossa.Model({ username: 'not here' });
+      model._stored = true; // fake existance
+
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .destroy().done(function deleted(err, n) {
+          expect(err).to.equal(null);
+          expect(n).to.equal(0);
+          done();
+        });
+    });
   });
 
   describe('#save', function () {
