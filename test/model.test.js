@@ -192,7 +192,7 @@ describe('Fossa Model', function () {
         });
     });
 
-    it('Gets the current state of the model from the database with READ', function (done) {
+    it('gets the current state of the model from the database with READ', function (done) {
       var model = new fossa.Model({ username: 'fetch' });
 
       model
@@ -208,7 +208,24 @@ describe('Fossa Model', function () {
         });
     });
 
+    it('can pass MongoDB options, per example fields to do a partial read', function (done) {
+      var model = new fossa.Model({ username: 'fetch', email: 'stored@value' });
 
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .save()
+        .done(function synced(err, items) {
+          model
+            .set('email', 'new@value')
+            .sync('read', { fields: { username: 1 }})
+            .done(function (err, item) {
+              expect(err).to.equal(null);
+              expect(model.get('email')).to.equal('new@value');
+              done();
+            });
+          });
+    });
   });
 
   describe('#destroy', function () {
@@ -244,7 +261,7 @@ describe('Fossa Model', function () {
   });
 
   describe('#save', function () {
-    it('Saves new model by default', function (done) {
+    it('saves new model by default', function (done) {
       var model = new fossa.Model({'username': 'save'});
 
       model
@@ -259,7 +276,7 @@ describe('Fossa Model', function () {
         });
     });
 
-   it('Updates existing model with changed attributes if patch:true', function (done) {
+   it('updates existing model with changed attributes if patch:true', function (done) {
       var model = new fossa.Model({'username': 'test'});
 
       model
@@ -278,7 +295,7 @@ describe('Fossa Model', function () {
         });
     });
 
-    it('Defaults to CREATE on new model if patch:true', function (done) {
+    it('defaults to CREATE on new model if patch:true', function (done) {
       var model = new fossa.Model;
 
       model
@@ -294,7 +311,7 @@ describe('Fossa Model', function () {
   });
 
   describe('#fetch', function () {
-    it('Gets the current state of the model from the database', function (done) {
+    it('gets the current state of the model from the database', function (done) {
       var model = new fossa.Model({ username: 'fetch' });
 
       model
@@ -310,7 +327,7 @@ describe('Fossa Model', function () {
         });
     });
 
-    it('Does not fetch and update attributes when model is unsaved', function (done) {
+    it('does not fetch and update attributes when model is unsaved', function (done) {
       var model = new fossa.Model({ username: 'fetch' });
 
       model
