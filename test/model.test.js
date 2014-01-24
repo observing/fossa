@@ -191,6 +191,24 @@ describe('Fossa Model', function () {
             });
         });
     });
+
+    it('Gets the current state of the model from the database with READ', function (done) {
+      var model = new fossa.Model({ username: 'fetch' });
+
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .save()
+        .done(function synced(err, items) {
+          model.set('username', 'new').sync('read').done(function (err, item) {
+            expect(err).to.equal(null);
+            expect(model.get('username')).to.equal(item.username);
+            done();
+          });
+        });
+    });
+
+
   });
 
   describe('#destroy', function () {
