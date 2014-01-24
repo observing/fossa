@@ -291,5 +291,20 @@ describe('Fossa Model', function () {
           });
         });
     });
+
+    it('Does not fetch and update attributes when model is unsaved', function (done) {
+      var model = new fossa.Model({ username: 'fetch' });
+
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .fetch().done(function (err, item) {
+          expect(err).to.equal(null);
+          expect(item).to.equal(null);
+          expect(model.isNew()).to.equal(true);
+          expect(model.get('username')).to.equal('fetch');
+          done();
+        });
+    });
   });
 });
