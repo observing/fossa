@@ -1,26 +1,17 @@
 'use strict';
 
 //
-// Native modules.
-//
-var EventEmitter = require('events').EventEmitter;
-
-//
-// Third-party modules.
-//
-var mongo = require('mongodb');
-
-//
 // Required modules.
 //
 var collection = require('./lib/collection')
-  , model = require('./lib/model');
+  , predefine = require('predefine')
+  , model = require('./lib/model')
+  , mongo = require('mongodb');
 
 //
-// References to mongo logic and export Fossa.
+// References to mongo logic.
 //
-var fossa = module.exports
-  , MongoClient = mongo.MongoClient
+var MongoClient = mongo.MongoClient
   , Server = mongo.Server;
 
 /**
@@ -31,26 +22,30 @@ var fossa = module.exports
  * @api public
  */
 function Fossa(options) {
-  // Store the options.
-  this.options = options = this.options(options || {});
-  this.plugins = {};
+  var readable = predefine(this)
+    , writable = predefine(this, predefine.WRITABLE);
 
+  //
+  // Store the options.
+  //
+  this.options = options = this.options(options || {});
+  writable('plugins', {});
+
+  //
+  // Prepare a default model and collection sprinkled with MongoDB proxy methods.
+  //
+  readable('Model', model(this));
+  readable('Collection', collection(this));
+
+  //
   // Prepare connection.
+  //
   this.init(
     options('host', 'localhost'),
     options('port', 27017),
     options
   );
-
-  // Prepare a default model and collection sprinkled with MongoDB proxy methods.
-  this.Model = model(this);
-  this.Collection = collection(this);
 }
-
-//
-// Allow event emitting from Fossa.
-//
-Fossa.prototype.__proto__ = EventEmitter.prototype;
 
 /**
  * Checks if options exists.
