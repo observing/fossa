@@ -25,7 +25,7 @@ describe('Predefine', function () {
   });
 
   it('adds a readabe CRUD reference', function () {
-    var properties = Object.getOwnPropertyDescriptor(Base.prototype, 'crud');
+    var properties = Object.getOwnPropertyDescriptor(Base.prototype, '_crud');
 
     expect(properties.value).to.be.an('array');
     expect(properties.writable).to.equal(false);
@@ -43,7 +43,7 @@ describe('Predefine', function () {
 
     expect(model).to.have.property('use');
     expect(model.use).to.be.a('function');
-    expect(model).to.have.property('database', 'observer');
+    expect(model).to.have.property('_database', 'observer');
     expect(returns).to.be.instanceof(Base);
   });
 
