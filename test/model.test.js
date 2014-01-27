@@ -310,33 +310,6 @@ describe('Fossa Model', function () {
     });
   });
 
-  describe('#before', function () {
-    it('emit create is triggered to run per attribute', function (done) {
-      var Model = fossa.Model.extend({
-            before: {
-              'create password': 'password'
-            },
-
-            password: function password(value, next) {
-              this.set('password', 'salt' + value);
-              next();
-            }
-          })
-        , model = new Model({ password: 'mypw' });
-
-      model
-        .define('urlRoot', 'users')
-        .use('fossa')
-        .save()
-        .done(function synced(err, items) {
-          expect(err).to.equal(null);
-          expect(items.length).to.equal(1);
-          expect(items[0]).to.have.property('password', 'saltmypw');
-          done();
-        });
-    });
-  });
-
   describe('#fetch', function () {
     it('gets the current state of the model from the database', function (done) {
       var model = new fossa.Model({ username: 'fetch' });
@@ -369,4 +342,53 @@ describe('Fossa Model', function () {
         });
     });
   });
+
+  describe('has before hook', function () {
+    it('only runs before:create if event listener is available', function (done) {
+      var Model = fossa.Model.extend({
+            before: {
+              'update password': 'password'
+            }
+          })
+        , model = new Model({ password: 'mypw' });
+
+      model
+        .define('urlRoot', 'users')
+        .use('fossa')
+        .save()
+        .done(function synced(err, items) {
+          expect(err).to.equal(null);
+          expect(items.length).to.equal(1);
+          expect(items[0]).to.have.property('password', 'mypw');
+          done();
+        });
+    });
+
+    it('which trigger before:create to run per registered attribute', function (done) {
+      var Model = fossa.Model.extend({
+            before: {
+              'create password': 'password'
+            },
+
+            password: function password(value, next) {
+              this.set('password', 'salt' + value);
+              next();
+            }
+          })
+        , model = new Model({ password: 'mypw' });
+
+      model
+        .define('urlRoot', 'users')
+        .use('fossa')
+        .save()
+        .done(function synced(err, items) {
+          expect(err).to.equal(null);
+          expect(items.length).to.equal(1);
+          expect(items[0]).to.have.property('password', 'saltmypw');
+          done();
+        });
+    });
+  });
+
+
 });
