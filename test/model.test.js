@@ -364,18 +364,23 @@ describe('Fossa Model', function () {
         });
     });
 
-    it('which trigger before:create to run per registered attribute', function (done) {
+    it('which triggers before:create to run per registered attribute', function (done) {
       var Model = fossa.Model.extend({
             before: {
-              'create password': 'password'
+              'create password': 'password',
+              'create username': 'username'
             },
 
             password: function password(value, next) {
               this.set('password', 'salt' + value);
               next();
+            },
+            username: function username(value, next) {
+              this.set('username', value + '@observe.it');
+              next();
             }
           })
-        , model = new Model({ password: 'mypw' });
+        , model = new Model({ password: 'mypw', username: 'me' });
 
       model
         .define('urlRoot', 'users')
@@ -385,7 +390,39 @@ describe('Fossa Model', function () {
           expect(err).to.equal(null);
           expect(items.length).to.equal(1);
           expect(items[0]).to.have.property('password', 'saltmypw');
+          expect(items[0]).to.have.property('username', 'me@observe.it');
           done();
+        });
+    });
+
+    it('which triggers before:update to run against latest local attributes', function (done) {
+      var Model = fossa.Model.extend({
+            before: {
+              'create password': 'password'
+            },
+
+            password: function password(value, next) {
+              this.set('password', 'salt' + value);
+              next();
+            },
+          })
+        , model = new Model({ password: 'mypw' });
+
+      model
+        .define('urlRoot', 'users')
+        .use('fossa')
+        .save()
+        .done(function saved() {
+          model
+            .set('password', 'newpw')
+            .sync('update')
+            .done(function synced(err, items) {
+              expect(items).to.equal(1);
+              db.collection('users').findOne({ _id: model.id }, function (err, item) {
+                expect(item).to.have.property('password', 'newpw');
+                done();
+              });
+            });
         });
     });
   });
