@@ -7,8 +7,6 @@ describe('Predefine', function () {
     , expect = common.expect
     , Base;
 
-  function Construct() { }
-
   beforeEach(function () {
     Base = predefine(backbone.Model.extend({}));
   });
@@ -71,6 +69,38 @@ describe('Predefine', function () {
       expect(err).to.equal(null);
       expect(result).to.equal('connection');
       done();
+    });
+  });
+
+  describe('#setup', function () {
+    it('will register listeners for before/after hooks', function () {
+      var Model = Base.extend({
+            before: { 'create username': 'username' },
+            after: { 'delete username': 'username' }
+          })
+        , model = new Model;
+
+      model.setup('before');
+      expect(model._events).to.have.property('before:create');
+      expect(model._events['before:create']).to.be.an('array');
+      expect(model._events['before:create'][0]).to.be.an('object');
+      expect(model._events['before:create'][0].callback).to.be.a('function');
+
+      model.setup('after');
+      expect(model._events).to.have.property('after:delete');
+      expect(model._events['after:delete']).to.be.an('array');
+      expect(model._events['after:delete'][0]).to.be.an('object');
+      expect(model._events['after:delete'][0].callback).to.be.a('function');
+    });
+
+    it('will ignore unknown hooks', function () {
+      var Model = Base.extend({
+            after: { 'new username': 'username' }
+          })
+        , model = new Model;
+
+      model.setup('after');
+      expect(model).to.not.have.property('_events');
     });
   });
 });
