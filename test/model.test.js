@@ -474,5 +474,28 @@ describe('Fossa Model', function () {
         .use('fossa')
         .save();
     });
+
+    it('which can be provided functions directly', function (done) {
+      var Model = fossa.Model.extend({
+            before: {
+              'validate email': function trim(value) {
+                this.set('email', value.trim());
+              }
+            },
+
+            validate: function validate(attributes, options) {
+              expect(attributes.email).to.equal('myemail@spaces.com');
+              expect(options.validate).to.equal(true);
+              done();
+            }
+          })
+        , model = new Model({ email: 'myemail@spaces.com  ' });
+
+      model
+        .define('urlRoot', 'users')
+        .use('fossa')
+        .save();
+    });
+
   });
 });
