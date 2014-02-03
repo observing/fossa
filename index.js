@@ -15,7 +15,7 @@ var MongoClient = mongo.MongoClient
   , Server = mongo.Server;
 
 /**
- * Overload options with general getter and fallback.
+ * Queryable options with merge and fallback functionality.
  *
  * @param {Object} obj
  * @returns {Function}

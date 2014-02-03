@@ -60,8 +60,8 @@ describe('Fossa constructor', function () {
     expect(db.options('test')).to.equal(undefined);
 
     var fossa = new Fossa({ host: '127.0.0.1' });
-    db.options.merge({ test: 'additional' });
-    expect(db.options('test')).to.equal('additional');
+    fossa.options.merge({ test: 'additional' });
+    expect(fossa.options('test')).to.equal('additional');
   });
 
   describe('#connect', function () {
