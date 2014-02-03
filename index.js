@@ -15,6 +15,28 @@ var MongoClient = mongo.MongoClient
   , Server = mongo.Server;
 
 /**
+ * Overload options with general getter and fallback.
+ *
+ * @param {Object} obj
+ * @returns {Function}
+ * @api private
+ */
+function configure(obj) {
+  function get(key, backup) {
+    return key in obj ? obj[key] : backup;
+  }
+
+  //
+  // Allow new options to be be merged in against the original object.
+  //
+  get.merge = function merge(properties) {
+    return predefine.merge(obj, properties);
+  };
+
+  return get;
+}
+
+/**
  * Constructor of Fossa.
  *
  * @Constructor
@@ -28,7 +50,7 @@ function Fossa(options) {
   //
   // Store the options.
   //
-  this.options = options = this.options(options || {});
+  readable('options', configure(options || {}));
   writable('plugins', {});
 
   //
@@ -41,24 +63,11 @@ function Fossa(options) {
   // Prepare connection.
   //
   this.init(
-    options('host', 'localhost'),
-    options('port', 27017),
-    options
+    this.options('host', 'localhost'),
+    this.options('port', 27017),
+    this.options
   );
 }
-
-/**
- * Checks if options exists.
- *
- * @param {Object} obj
- * @returns {Function}
- * @api private
- */
-Fossa.prototype.options = function options(obj) {
-  return function get(key, backup) {
-    return key in obj ? obj[key] : backup;
-  };
-};
 
 /**
  * Initialize a MongoClient and Server.

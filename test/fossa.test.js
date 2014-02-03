@@ -55,6 +55,15 @@ describe('Fossa constructor', function () {
     expect(fossa.options('host')).to.equal('127.0.0.1');
   });
 
+  it('additional options can be merged, per example from a plugin', function () {
+    expect(db.options.merge).to.be.a('function');
+    expect(db.options('test')).to.equal(undefined);
+
+    var fossa = new Fossa({ host: '127.0.0.1' });
+    db.options.merge({ test: 'additional' });
+    expect(db.options('test')).to.equal('additional');
+  });
+
   describe('#connect', function () {
     it('to mongoDB or returns opened connection from the pool', function (done) {
       expect(db.client).to.equal(undefined);
