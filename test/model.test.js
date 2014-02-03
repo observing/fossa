@@ -496,6 +496,57 @@ describe('Fossa Model', function () {
         .use('fossa')
         .save();
     });
+  });
 
+  describe('has after hook', function () {
+    it('which will execute regardless of validation state', function (done) {
+      var Model = fossa.Model.extend({
+            after: {
+              'validate email': function unset(value) {
+                expect(value).to.equal('');
+                expect(this._stored).to.equal(false);
+              }
+            },
+
+            validate: function validate(attributes, options) {
+              if (true) this.set('email', '');
+              return 'email not valid';
+            }
+          })
+        , model = new Model({ email: 'myemail@spaces.com' });
+
+      model.once('invalid', function (model, error) {
+        expect(model).to.have.property('validationError', 'email not valid');
+        expect(error).to.equal('email not valid');
+        done();
+      });
+
+      var result = model
+        .define('urlRoot', 'users')
+        .use('fossa')
+        .save();
+    });
+
+    it('which can be provided functions directly', function (done) {
+      var Model = fossa.Model.extend({
+            after: {
+              'validate email': function trim(value) {
+                this.set('email', '');
+              }
+            },
+
+            validate: function validate(attributes, options) {
+              expect(attributes.email).to.equal('myemail@spaces.com');
+              expect(this._events).to.not.have.property('change:email');
+              done();
+            }
+          })
+        , model = new Model({ email: 'myemail@spaces.com' });
+
+      model
+        .define('urlRoot', 'users')
+        .use('fossa')
+        .save();
+    });
   });
 });
