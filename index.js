@@ -50,8 +50,8 @@ function Fossa(options) {
   //
   // Store the options.
   //
-  readable('options', configure(options || {}));
   writable('plugins', {});
+  readable('options', configure(options || {}));
 
   //
   // Prepare a default model and collection sprinkled with MongoDB proxy methods.

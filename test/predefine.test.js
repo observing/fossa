@@ -80,13 +80,13 @@ describe('Predefine', function () {
           })
         , model = new Model;
 
-      model.setup('before');
+      model.setup(['before']);
       expect(model._events).to.have.property('before:create');
       expect(model._events['before:create']).to.be.an('array');
       expect(model._events['before:create'][0]).to.be.an('object');
       expect(model._events['before:create'][0].callback).to.be.a('function');
 
-      model.setup('after');
+      model.setup(['after']);
       expect(model._events).to.have.property('after:delete');
       expect(model._events['after:delete']).to.be.an('array');
       expect(model._events['after:delete'][0]).to.be.an('object');
@@ -99,7 +99,7 @@ describe('Predefine', function () {
           })
         , model = new Model;
 
-      model.setup('after');
+      model.setup(['after']);
       expect(model).to.not.have.property('_events');
     });
   });
