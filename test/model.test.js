@@ -426,7 +426,7 @@ describe('Fossa Model', function () {
         });
     });
 
-    it('validate runs prior to any before hooks', function (done) {
+    it('validate runs prior to any before:method hooks', function (done) {
       var Model = fossa.Model.extend({
             before: {
               'create email': 'trim'
@@ -439,6 +439,30 @@ describe('Fossa Model', function () {
 
             validate: function validate(attributes, options) {
               expect(attributes.email).to.equal('myemail@spaces.com  ');
+              expect(options.validate).to.equal(true);
+              done();
+            }
+          })
+        , model = new Model({ email: 'myemail@spaces.com  ' });
+
+      model
+        .define('urlRoot', 'users')
+        .use('fossa')
+        .save();
+    });
+
+    it('which triggers before:validate synchronous hooks', function (done) {
+      var Model = fossa.Model.extend({
+            before: {
+              'validate email': 'trim'
+            },
+
+            trim: function trim(value) {
+              this.set('email', value.trim());
+            },
+
+            validate: function validate(attributes, options) {
+              expect(attributes.email).to.equal('myemail@spaces.com');
               expect(options.validate).to.equal(true);
               done();
             }
