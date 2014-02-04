@@ -343,8 +343,8 @@ describe('Fossa Model', function () {
     });
   });
 
-  describe('has before hook', function () {
-    it('only runs before:create if event listener is available', function (done) {
+  describe('has before hooks', function () {
+    it('which only run before:create if event listener is available', function (done) {
       var Model = fossa.Model.extend({
             before: {
               'update password': 'password'
@@ -364,7 +364,7 @@ describe('Fossa Model', function () {
         });
     });
 
-    it('which triggers before:create to run per registered attribute', function (done) {
+    it('which can trigger before:create to run per registered attribute', function (done) {
       var Model = fossa.Model.extend({
             before: {
               'create password': 'password',
@@ -395,7 +395,7 @@ describe('Fossa Model', function () {
         });
     });
 
-    it('which triggers before:update to run against latest local attributes', function (done) {
+    it('which can trigger before:update to run against latest local attributes', function (done) {
       var Model = fossa.Model.extend({
             before: {
               'create password': 'password'
@@ -426,7 +426,7 @@ describe('Fossa Model', function () {
         });
     });
 
-    it('validate runs prior to any before:method hooks', function (done) {
+    it('which runs validate hooks prior to any before:method hooks', function (done) {
       var Model = fossa.Model.extend({
             before: {
               'create email': 'trim'
@@ -451,7 +451,7 @@ describe('Fossa Model', function () {
         .save();
     });
 
-    it('which triggers before:validate synchronous hooks', function (done) {
+    it('which can trigger before:validate synchronous hooks', function (done) {
       var Model = fossa.Model.extend({
             before: {
               'validate email': 'trim'
@@ -525,6 +525,65 @@ describe('Fossa Model', function () {
         .define('urlRoot', 'users')
         .use('fossa')
         .save();
+    });
+
+    it('which can trigger after:read to run per registered attribute', function (done) {
+      var Model = fossa.Model.extend({
+            after: {
+              'read password': function password(value, next) {
+                expect(this).to.have.property('_stored', true);
+                this.unset('password');
+                next();
+              }
+            }
+          })
+        , model = new Model({ password: 'dirtylittlesecret' });
+
+      model
+        .define('urlRoot', 'users')
+        .use('fossa')
+        .save()
+        .done(function saved() {
+          expect(model.get('password')).to.equal('dirtylittlesecret');
+          model
+            .fetch()
+            .done(function synced(err, items) {
+              expect(items).to.have.property('password', 'dirtylittlesecret');
+              expect(model.get('password')).to.equal(undefined);
+              expect(model._previousAttributes).to.have.property('password', 'dirtylittlesecret');
+              done();
+            });
+        });
+    });
+
+    it('which can trigger after:delete to run per registered attribute', function (done) {
+      var Model = fossa.Model.extend({
+            after: {
+              'delete server': function server(value, next) {
+                expect(this).to.have.property('_stored', false);
+                this.unset('server');
+                next();
+              }
+            }
+          })
+        , model = new Model({ server: 'use.domain.name' });
+
+      model
+        .define('urlRoot', 'users')
+        .use('fossa')
+        .save()
+        .done(function saved() {
+          model
+            .sync('delete')
+            .done(function synced(err, items) {
+              expect(items).to.equal(1);
+              expect(model.get('server')).to.equal(undefined);
+              db.collection('users').findOne({ _id: model.id }, function (err, item) {
+                expect(item).to.equal(null);
+                done();
+              });
+            });
+        });
     });
 
     it('which can be provided functions directly', function (done) {
