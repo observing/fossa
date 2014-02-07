@@ -19,7 +19,9 @@ describe('Fossa Model', function () {
   });
 
   after(function (done) {
-    common.clear(done);
+    common.clear(function () {
+      db.close(done);
+    });
   });
 
   beforeEach(function () {
@@ -122,7 +124,7 @@ describe('Fossa Model', function () {
       });
     });
 
-    it('returns an error when updating a undefined model in MongoDB', function (done) {
+    it('returns 0 when updating a non-existant model in MongoDB', function (done) {
       var model = new fossa.Model({ username: 'test' });
 
       model
@@ -130,10 +132,9 @@ describe('Fossa Model', function () {
         .use('fossa')
         .sync('update')
         .done(function synced(err, result) {
-          expect(err).to.be.instanceof(Error);
-          expect(err).to.have.property('name', 'MongoError');
-          expect(err).to.have.property('err', 'Mod on _id not allowed');
-          expect(err.message).to.equal('Mod on _id not allowed');
+          expect(err).to.equal(null);
+          expect(result).to.equal(0);
+          expect(model._stored).to.equal(false);
           done();
         });
     });
