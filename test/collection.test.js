@@ -6,7 +6,7 @@ describe('Fossa Collection', function () {
     , expect = common.expect
     , Fossa = common.Fossa
     , db = common.db
-    , fossa;
+    , Users, fossa;
 
   //
   // Establish connection to db
@@ -26,10 +26,12 @@ describe('Fossa Collection', function () {
 
   beforeEach(function () {
     fossa = new Fossa;
+    Users = fossa.Collection.extend({ url: 'users' });
   });
 
   afterEach(function () {
     fossa = null;
+    Users = null;
   });
 
   it('is extendable', function () {
@@ -58,5 +60,27 @@ describe('Fossa Collection', function () {
     expect(collection.id).to.be.a('function');
     expect(collection.id(id)).to.be.an('object');
     expect(collection.id(id).get('_id')).to.equal(id);
+  });
+
+  describe('#sync', function () {
+    it('inserts new models in the database', function (done) {
+      var o1 = new fossa.Model
+        , o2 = new fossa.Model
+        , users = new Users([o1, o2]);
+
+      users.use('fossa').sync().done(function (error, results) {
+        expect(error).to.equal(null);
+        expect(results).to.be.an('array');
+        db.collection('users').find().toArray(function (err, items) {
+          expect(err).to.equal(null);
+          expect(items).to.be.an('array');
+          expect(items[0]).to.have.property('_id');
+          expect(items[0]._id.toString()).to.equal(o1.id.toString());
+          expect(items[1]).to.have.property('_id');
+          expect(items[1]._id.toString()).to.equal(o2.id.toString());
+          done();
+        });
+      });
+    });
   });
 });

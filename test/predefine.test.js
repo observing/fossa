@@ -5,25 +5,37 @@ describe('Predefine', function () {
     , backbone = require('backbone')
     , predefine = require('../lib/predefine')
     , expect = common.expect
-    , Base;
+    , Base, model;
+
+  Base = backbone.Model.extend({
+    constructor: function constructor() {
+      predefine(this, {
+        connect: function (database, collection, fn) {
+          expect(database).to.equal('observer');
+          expect(collection).to.equal('users');
+          fn(null, 'connection');
+        }
+      });
+    }
+  });
 
   beforeEach(function () {
-    Base = predefine(backbone.Model.extend({}));
+    model = new Base;
   });
 
   afterEach(function () {
-    Base = null;
+    model = null;
   });
 
   it('provides constructer with readable and writeable functionality', function () {
-    expect(Base.prototype).to.have.property('readable');
-    expect(Base.prototype).to.have.property('writable');
-    expect(Base.prototype.readable).to.be.a('function');
-    expect(Base.prototype.writable).to.be.a('function');
+    expect(model).to.have.property('readable');
+    expect(model).to.have.property('writable');
+    expect(model.readable).to.be.a('function');
+    expect(model.writable).to.be.a('function');
   });
 
   it('adds a readabe CRUD reference', function () {
-    var properties = Object.getOwnPropertyDescriptor(Base.prototype, '_crud');
+    var properties = Object.getOwnPropertyDescriptor(model, '_crud');
 
     expect(properties.value).to.be.an('array');
     expect(properties.writable).to.equal(false);
@@ -36,8 +48,7 @@ describe('Predefine', function () {
   });
 
   it('#use sets the database to use for sync and returns instance', function () {
-    var model = new Base
-      , returns = model.use('observer');
+    var returns = model.use('observer');
 
     expect(model).to.have.property('use');
     expect(model.use).to.be.a('function');
@@ -46,8 +57,7 @@ describe('Predefine', function () {
   });
 
   it('#define sets property on actual model returns instance', function () {
-    var model = new Base
-      , returns = model.define('urlRoot', 'users');
+    var returns = model.define('urlRoot', 'users');
 
     expect(model).to.have.property('define');
     expect(model.define).to.be.a('function');
@@ -56,15 +66,6 @@ describe('Predefine', function () {
   });
 
   it('#client creates connection to MongoDB with proper database and collection', function (done) {
-    var model = new Base;
-    model.fossa = {
-      connect: function (database, collection, fn) {
-        expect(database).to.equal('observer');
-        expect(collection).to.equal('users');
-        fn(null, 'connection');
-      }
-    };
-
     model.use('observer').define('urlRoot', 'users').client(function (err, result) {
       expect(err).to.equal(null);
       expect(result).to.equal('connection');

@@ -89,25 +89,25 @@ Fossa.prototype.init = function init(host, port, options) {
  *
  * @param {String} database name
  * @param {String} collection name
- * @param {Function} fn callback
+ * @param {Function} done callback
  * @return {Fossa} fluent interface
  * @api public
  */
-Fossa.prototype.connect = function connect(database, collection, fn) {
+Fossa.prototype.connect = function connect(database, collection, done) {
   var fossa = this;
 
   //
   // If no collection string is supplied it must be a callback.
   //
   if (typeof collection === 'function') {
-    fn = collection;
+    done = collection;
     collection = null;
   }
 
   //
   // If no database was set before mitigating to the collection, fail.
   //
-  if (!database) fn(new Error('Provide database name with #use before saving.'));
+  if (!database) done(new Error('Provide database name with #use before saving.'));
 
   //
   // If there is a connected client simply switch the pool over to another database.
@@ -119,24 +119,24 @@ Fossa.prototype.connect = function connect(database, collection, fn) {
       //
       // If a collection was supplied defer in a safe manner.
       //
-      if (collection) return fossa.collection(collection, fn);
-      fn(null, fossa.client);
+      if (collection) return fossa.collection(collection, done);
+      done(null, fossa.client);
     });
   }
 
   //
   // Open a new connection to a MongoDB instance.
   //
-  fossa.mongoclient.open(function(err, client) {
-    if (err) return fn(err);
+  fossa.mongoclient.open(function(error, client) {
+    if (error) return done(error);
 
     fossa.client = client.db(database);
 
     //
     // If a collection was supplied defer in a safe manner.
     //
-    if (collection) return fossa.collection(collection, fn);
-    fn(err, fossa.client);
+    if (collection) return fossa.collection(collection, done);
+    done(error, fossa.client);
   });
 
   return this;
@@ -145,12 +145,12 @@ Fossa.prototype.connect = function connect(database, collection, fn) {
 /**
  * Close the connection with the database.
  *
- * @param {Function} fn callback
+ * @param {Function} done callback
  * @return {Fossa} fluent interface
  * @api public
  */
-Fossa.prototype.close = function close(fn) {
-  this.client.close(fn);
+Fossa.prototype.close = function close(done) {
+  this.client.close(done);
 
   return this;
 };
@@ -159,21 +159,43 @@ Fossa.prototype.close = function close(fn) {
  * Switch to the supplied collection.
  *
  * @param {String} name collection name
- * @param {Function} fn callback
+ * @param {Function} done callback
  * @return {Fossa} fluent interface
  * @api public
  */
-Fossa.prototype.collection = function collection(name, fn) {
+Fossa.prototype.collection = function collection(name, done) {
   var fossa = this;
 
-  this.client.collection(name, function switched(err, collection) {
-    if (err) return fn(err);
+  this.client.collection(name, function switched(error, collection) {
+    if (error) return done(error);
 
     fossa.client.store = collection;
-    fn(err, collection);
+    done(error, collection);
   });
 
   return this;
+};
+
+/**
+ * Fetch documents from MongoDB and initialize a collection.
+ *
+ * @param {String} db database name
+ * @param {String} collection collection name
+ * @param {Function} done callback.
+ * @api public
+ */
+Fossa.prototype.get = function get(db, collection, done) {
+  var fossa = this;
+
+  this.connect(db, collection, function connected(error, client) {
+    if (error) return done(error);
+
+    client.find().toArray(function getAll(error, results) {
+      if (error) return done(error);
+
+      return (null, new fossa.Collection(results));
+    });
+  });
 };
 
 /**

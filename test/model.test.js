@@ -61,7 +61,7 @@ describe('Fossa Model', function () {
   });
 
   it('refreshed stored reference on ID change', function (done) {
-    var model = new fossa.Model();
+    var model = new fossa.Model;
 
     model.on('change:_id', function (model, id) {
       expect(id).to.be.instanceof(ObjectID);
