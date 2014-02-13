@@ -62,6 +62,12 @@ describe('Fossa Collection', function () {
     expect(collection.id(id).get('_id')).to.equal(id);
   });
 
+  it('can be provided with a database options', function () {
+    var collection = new fossa.Collection({ database: 'fossa' });
+    expect(collection._database).to.equal('fossa');
+    expect(collection._database).to.be.a('string');
+  });
+
   describe('#sync', function () {
     it('inserts new models in the database', function (done) {
       var o1 = new fossa.Model

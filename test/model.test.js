@@ -83,6 +83,12 @@ describe('Fossa Model', function () {
     expect(model.id).to.be.an.instanceof(ObjectID);
   });
 
+  it('can be provided with a database options', function () {
+    var model = new fossa.Model({}, { database: 'fossa' });
+    expect(model._database).to.equal('fossa');
+    expect(model._database).to.be.a('string');
+  });
+
   describe('#sync', function () {
     it('can be stored in MongoDB by sync with urlRoot property', function (done) {
       var model = new fossa.Model({ username: 'test' });
