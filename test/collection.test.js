@@ -3,6 +3,7 @@ describe('Fossa Collection', function () {
 
   var common = require('./common')
     , ObjectID = require('mongodb').ObjectID
+    , _ = require('lodash')
     , expect = common.expect
     , Fossa = common.Fossa
     , db = common.db
@@ -78,12 +79,13 @@ describe('Fossa Collection', function () {
         expect(error).to.equal(null);
         expect(results).to.be.an('array');
         db.collection('users').find().toArray(function (err, items) {
+          var flat = _.pluck(items, '_id').map(String);
           expect(err).to.equal(null);
           expect(items).to.be.an('array');
           expect(items[0]).to.have.property('_id');
-          expect(items[0]._id.toString()).to.equal(o1.id.toString());
           expect(items[1]).to.have.property('_id');
-          expect(items[1]._id.toString()).to.equal(o2.id.toString());
+          expect(flat).to.include(o1.id.toString());
+          expect(flat).to.include(o2.id.toString());
           done();
         });
       });
