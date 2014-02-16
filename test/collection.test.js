@@ -108,5 +108,18 @@ describe('Fossa Collection', function () {
         });
       });
     });
+
+    it('reads models from the database collection', function (done) {
+      var Test = fossa.Collection.extend({ url: 'test' })
+        , test = new Test({ database: 'fossa' });
+
+      test.sync('read').done(function (error, results) {
+        expect(results).to.be.an('array');
+        expect(test.models).to.be.an('array');
+        expect(test.models).to.have.length(2);
+        expect(test.findWhere({a: 1})).to.be.an('object');
+        done();
+      });
+    });
   });
 });
