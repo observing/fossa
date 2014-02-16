@@ -73,9 +73,9 @@ describe('Fossa Collection', function () {
     it('inserts new models in the database', function (done) {
       var o1 = new fossa.Model
         , o2 = new fossa.Model
-        , users = new Users([o1, o2]);
+        , users = new Users([o1, o2], { database: 'fossa' });
 
-      users.use('fossa').sync().done(function (error, results) {
+      users.sync().done(function (error, results) {
         expect(error).to.equal(null);
         expect(results).to.be.an('array');
         db.collection('users').find().toArray(function (err, items) {
@@ -87,6 +87,24 @@ describe('Fossa Collection', function () {
           expect(flat).to.include(o1.id.toString());
           expect(flat).to.include(o2.id.toString());
           done();
+        });
+      });
+    });
+
+    it('deletes all models from the collection', function (done) {
+      var o1 = new fossa.Model
+        , o2 = new fossa.Model
+        , users = new Users([o1, o2], { database: 'fossa' });
+
+      users.sync().done(function (error, results) {
+        users.sync('delete').done(function (error, results) {
+          expect(results).to.equal(2);
+          db.collection('users').find().toArray(function (err, items) {
+            var flat = _.pluck(items, '_id').map(String);
+            expect(items).to.not.include(o1.id.toString());
+            expect(items).to.not.include(o2.id.toString());
+            done();
+          });
         });
       });
     });
