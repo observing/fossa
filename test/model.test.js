@@ -109,8 +109,8 @@ describe('Fossa Model', function () {
     });
 
     it('switches to PUT if the model with ObjectID exists', function (done) {
-      var id = new ObjectID
-        , model = new fossa.Model({ _id: id, username: 'test' });
+      var model = new fossa.Model({ username: 'test' })
+        , id = model.id;
 
       model
         .define('urlRoot','users')
