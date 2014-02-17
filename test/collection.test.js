@@ -140,18 +140,42 @@ describe('Fossa Collection', function () {
         });
       });
     });
+
+    it('does smart updates for each of the models in the collection', function (done) {
+      var Test = fossa.Collection.extend({ url: 'test' })
+        , test = new Test({ database: 'fossa' });
+
+      test.sync('read').done(function (error, results) {
+        var model = test.findWhere({c: 1});
+        model.set('username', 'test');
+        test.add({ c: 1, z: 1 });
+
+        test.sync().done(function () {
+          db.collection('test').find({c: 1}).toArray(function (err, items) {
+            expect(items).to.be.an('array');
+            expect(items).to.have.length(2);
+            expect(items[0]).to.have.property('username', 'test');
+            expect(items[0]).to.have.property('_id');
+            expect(items[0]._id.toString()).to.equal(model.id.toString());
+            expect(items[1]).to.have.property('c', 1);
+            expect(items[1]).to.have.property('z', 1);
+            done();
+          });
+        });
+      });
+    });
   });
 
   describe('#fetch', function () {
     it('reads models from the database collection', function (done) {
-      var Test = fossa.Collection.extend({ url: 'test' })
+      var Test = fossa.Collection.extend({ url: 'test1' })
         , test = new Test({ database: 'fossa' });
 
       test.fetch().done(function (error, results) {
         expect(results).to.be.an('array');
         expect(test.models).to.be.an('array');
         expect(test.models).to.have.length(2);
-        expect(test.findWhere({a: 1})).to.be.an('object');
+        expect(test.findWhere({e: 1})).to.be.an('object');
         done();
       });
     });
