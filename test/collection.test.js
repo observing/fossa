@@ -121,6 +121,25 @@ describe('Fossa Collection', function () {
         done();
       });
     });
+
+    it('updates models from the collection', function (done) {
+      var Test = fossa.Collection.extend({ url: 'test' })
+        , test = new Test({ database: 'fossa' });
+
+      test.sync('read').done(function (error, results) {
+        var model = test.findWhere({a: 1});
+        model.set('username', 'test');
+
+        test.sync('update').done(function () {
+          db.collection('test').findOne({a: 1}, function (err, item) {
+            expect(item).to.have.property('username', 'test');
+            expect(item).to.have.property('_id');
+            expect(item._id.toString()).to.equal(model.id.toString());
+            done();
+          });
+        });
+      });
+    });
   });
 
   describe('#fetch', function () {
