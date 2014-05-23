@@ -17,6 +17,11 @@ npm install fossa --save
 
 ## Tests
 
+Test can be run as follows, make sure all devDependencies have been installed.
+
+```sh
+npm test
+```
 
 ## Documentation
 
