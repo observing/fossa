@@ -25,7 +25,18 @@ npm test
 
 ## Documentation
 
-Generate api docs with JSDoc!!
+The API of fossa is 1:1 compatible with backbone. For a good reference of available
+methods see the [BackboneJS documentation][backbone].
+
+### Table of Contents
+
+**Collection or Model properties**
+- [Object.readable](#objectreadable)
+- [Object.writable](#objectwritable)
+- [Object.fossa](#objectfossa)
+
+- [Collection TOC](#collection-toc)
+- [Model TOC](#model-toc)
 
 ### Instantiation
 
@@ -42,30 +53,71 @@ var fossa = new Fossa({
 });
 ```
 
-### Collections
+#### Object.readable
 
-Fossa will expose a Backbone collection, which can be extended upon to suit your
-needs. This power offers flexibility, however beware you don't overwrite our
-proxied methods. Initialise the Collection before use.
+
+
+### Collection
+
+Fossa will expose a Backbone `Collection`, which can be extended upon to suit your
+needs. This offers flexibility, however beware you don't overwrite our
+proxied methods. Initialize the Collection before use.
 
 ```js
-var Account = fossa.Collection.extend({
-        name: 'accounts'
-      , database: 'observer'
-    });
-  , account = new Account;
+var Accounts = fossa.Collection.extend({
+  database: 'observer'
+});
+
+//
+// Initialize a new account.
+//
+var accounts = new Accounts;
 ```
 
+#### Collection TOC
+
+**Fossa.Collection properties**
+- [Collection.model](#collectionmodel)
+
+**Fossa.Collection instance**
+- [Collection.use](#collectionuse)
+-
+
 Fossa Collections have no required keys. However, before saving models a
-database should always be provided. This can be done by calling `use`,
-consider the following example.
+database should always be provided.
+
+#### Collection.model
+
+#### Collection.use
+
+Collections are the equivalent of a MongoDB database. However, the mapping to a
+specific database is not forced or persisted automatically. Any collection can be
+switched to another database name. Only data in memory will be saved to the database.
 
 ```js
-var Account = new fossa.Collection;
 account.use('observer').save(...);
 ```
 
-### Methods
+### Model
+
+Fossa will expose a Backbone `Model`, which can be extended with additional
+properties and values.
+
+```js
+var User = fossa.Model.extend({
+  firstname: 'Davy',
+  lastname: 'Jones'
+});
+```
+
+#### Model TOC
+
+**Fossa.Model properties**
+- [Model.attributeId](#modelattributeid)
+
+**Fossa.Model instance**
+- [Model.use](#modeluse)
+-
 
 [backbone]: http://backbonejs.org/
 [mongodb]: https://github.com/christkv/node-mongodb-native/
