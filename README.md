@@ -28,9 +28,10 @@ methods see the [BackboneJS documentation][backbone].
 - [Object.fossa](#objectfossa)
 
 **Collection or Model functions**
-- [Collection.use](#collectionuse)
-- [Collection.client](#collectionclient)
-- [Collection.define](#collectiondefine)
+- [Object.use](#objectuse)
+- [Object.client](#objectclient)
+- [Object.define](#objectdefine)
+- [Object.setup](#objectsetup)
 
 - [Collection](#collection)
 - [Model](#model)
@@ -126,6 +127,23 @@ Helper method to define a key:value on the `Collection` or a `Model`.
 account.define('username', 'idontwantanaccount');
 ```
 
+#### Object.setup
+
+Add before and after hooks for specific methods. The hooks need to be define on
+the model as objects. Where the first part is a known synchronization method, per
+example `create`. In the example below the method `username` will be called before
+and after the the username property is stored/changed.
+
+- **hooks**: _{Array}_ keys of hooks to use
+
+```js
+var Model = Base.extend({
+      before: { 'create username': 'username' },
+      after: { 'delete username': 'username' }
+    })
+  , model = new Model().setup(['before', 'after']);
+```
+
 ### Collection
 
 Fossa will expose a Backbone `Collection`, which can be extended upon to suit your
@@ -192,9 +210,14 @@ console.log(user);
 #### Collection.sync
 
 Synchronise the Models in Collection memory to MongoDB. Manually calling this
-method is usally not required or advised. The global `Backbone.sync` is also
+method is usally not required or advised. The global `Backbone.sync` is
 overwritten and will proxy to this method. To mimic [Backbone.sync][backbonesync]
 patterns a promise is returned.
+
+If the method is `create` and the colletion contains any models that
+are already stored, the method will be switched to update. Similarly if
+there are [new models](#modelisnew) in the collection,  `options.upsert = true`
+will be set.
 
 - **method**: _{String}_ optional CREATE, READ, UPDATE or DELETE, defaults to create
 - **collection**: _{Collection}_ optional collection object or this
@@ -221,11 +244,60 @@ var User = fossa.Model.extend({
 #### Model TOC
 
 **Fossa.Model properties**
-- [Model.attributeId](#modelattributeid)
+- [Model.idAttribute](#modelidAttribute)
+- [Model._stored](#modelstored)
 
 **Fossa.Model instance**
-- [Model.use](#modeluse)
--
+- [Model.sync](#modelsync)
+- [Model.isNew](#modelisnew)
+
+#### Model.idAttribute
+
+Sets the reference ID for all models to `_id`, which is the internal MongoDB ID.
+This will ensure models can be correctly resolved when synchronized. This can be
+changed to any user defined ID, however this is not advised. MongoDB will ensure
+each model is suppied with a unique ID on `_id`.
+
+```js
+var User = fossa.Model.extend({
+  idAttribute: 'cid'
+});
+```
+
+#### Model._stored
+
+Keep track of the current state of the Model. If the `_id` of the Model changes,
+the `_stored` state will be updated. This property is set on construction and used
+by [isNew](#modelisnew).
+
+#### Model.sync
+
+Synchronise the Model to MongoDB. Manually calling this method is usally not
+required or advised. The global `Backbone.sync` is overwritten and will proxy to
+this method. To mimic [Backbone.sync][backbonesync] patterns a promise is returned.
+
+Like with `Collection.sync` the method will be changed to update if the Model has
+a `_stored` property.
+
+- **method**: _{String}_ optional CREATE, READ, UPDATE or DELETE, defaults to create
+- **model**: _{Model}_ optional model object or this
+- **options**: _{Object}_ optional options
+
+```js
+user.sync('create', user, {}).done(function done(err, result) {
+  console.log(result);
+});
+```
+
+#### Model.isNew
+
+Helper function to check if the current Model is [stored](#modelstored) in the
+database yet. The method will return a boolean, if false the Model has been
+stored in the database.
+
+```js
+var stored = user.isNew();
+```
 
 ## Tests
 
