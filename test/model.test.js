@@ -138,7 +138,7 @@ describe('Fossa Model', function () {
         .use('fossa')
         .sync('update')
         .done(function synced(err, result) {
-          expect(err).to.equal(null);
+          expect(err).to.equal(undefined);
           expect(result).to.equal(0);
           expect(model._stored).to.equal(false);
           done();
@@ -188,7 +188,7 @@ describe('Fossa Model', function () {
           model
             .sync('delete')
             .done(function deleted(err, n) {
-              expect(err).to.equal(null);
+              expect(err).to.equal(undefined);
               expect(n).to.equal(1);
               db.collection('users').findOne({ _id: model.id }, function (err, item) {
                 expect(err).to.equal(null);
@@ -245,7 +245,7 @@ describe('Fossa Model', function () {
         .sync()
         .done(function synced(err, result) {
           model.destroy().done(function deleted(err, n) {
-            expect(err).to.equal(null);
+            expect(err).to.equal(undefined);
             expect(n).to.equal(1);
             done();
           });
@@ -260,7 +260,7 @@ describe('Fossa Model', function () {
         .define('urlRoot','users')
         .use('fossa')
         .destroy().done(function deleted(err, n) {
-          expect(err).to.equal(null);
+          expect(err).to.equal(undefined);
           expect(n).to.equal(0);
           done();
         });

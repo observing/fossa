@@ -1,4 +1,8 @@
-# Fossa
+# Fossa [![Build Status][status]](https://travis-ci.org/observing/fossa) [![NPM version][npmimgurl]](http://npmjs.org/package/fossa) [![Coverage Status][coverage]](http://coveralls.io/r/observing/fossa?branch=master)
+
+[status]: https://travis-ci.org/observing/fossa.png?branch=master
+[npmimgurl]: https://badge.fury.io/js/fossa.png
+[coverage]: http://coveralls.io/repos/observing/fossa/badge.png?branch=master
 
 Backbone powered model interface to MongoDB, thin wrapper around MongoDB. Fossa
 uses the API provided by [Backbone][backbone] and proxies it methods to the
@@ -33,6 +37,7 @@ methods see the [BackboneJS documentation][backbone].
 - [Object.define](#objectdefine)
 - [Object.setup](#objectsetup)
 
+**Instances**
 - [Collection](#collection)
 - [Model](#model)
 
@@ -161,8 +166,6 @@ var Accounts = fossa.Collection.extend({
 var accounts = new Accounts;
 ```
 
-#### Collection TOC
-
 **Fossa.Collection properties**
 - [Collection.model](#collectionmodel)
 - [Collection._database](#collection-database)
@@ -240,8 +243,6 @@ var User = fossa.Model.extend({
   lastname: 'Jones'
 });
 ```
-
-#### Model TOC
 
 **Fossa.Model properties**
 - [Model.idAttribute](#modelidAttribute)
