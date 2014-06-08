@@ -1,6 +1,6 @@
 {
   "name": "fossa",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Backbone powered model interface to MongoDB, thin wrapper around MongoJS",
   "main": "index.js",
   "scripts": {
@@ -26,10 +26,12 @@
     "url": "https://github.com/observing/fossa/issues"
   },
   "dependencies": {
-    "backbone": "~1.1.0",
-    "mongodb": "~1.4.5",
-    "lodash": "~2.4.0",
     "async": "~0.9.0",
+    "backbone": "~1.1.0",
+    "eventemitter3": "~0.1.2",
+    "fusing": "~0.3.0",
+    "lodash": "~2.4.0",
+    "mongodb": "~1.4.5",
     "predefine": "~0.1.1"
   },
   "devDependencies": {

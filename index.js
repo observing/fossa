@@ -4,9 +4,9 @@
 // Required modules.
 //
 var collection = require('./lib/collection')
-  , predefine = require('predefine')
   , model = require('./lib/model')
-  , mongo = require('mongodb');
+  , mongo = require('mongodb')
+  , fuse = require('fusing');
 
 //
 // References to mongo logic.
@@ -18,10 +18,11 @@ var MongoClient = mongo.MongoClient
  * Queryable options with merge and fallback functionality.
  *
  * @param {Object} obj
+ * @param {Fossa} fossa instance
  * @returns {Function}
  * @api private
  */
-function configure(obj) {
+function configure(obj, fossa) {
   function get(key, backup) {
     return key in obj ? obj[key] : backup;
   }
@@ -30,7 +31,7 @@ function configure(obj) {
   // Allow new options to be be merged in against the original object.
   //
   get.merge = function merge(properties) {
-    return predefine.merge(obj, properties);
+    return fossa.merge(obj, properties);
   };
 
   return get;
@@ -44,20 +45,19 @@ function configure(obj) {
  * @api public
  */
 function Fossa(options) {
-  var readable = predefine(this)
-    , writable = predefine(this, predefine.WRITABLE);
+  this.fuse();
 
   //
   // Store the options.
   //
-  writable('plugins', {});
-  readable('options', configure(options || {}));
+  this.writable('plugins', {});
+  this.readable('options', configure(options || {}, this));
 
   //
   // Prepare a default model and collection sprinkled with MongoDB proxy methods.
   //
-  readable('Model', model(this));
-  readable('Collection', collection(this));
+  this.readable('Model', model(this));
+  this.readable('Collection', collection(this));
 
   //
   // Prepare connection.
@@ -69,6 +69,11 @@ function Fossa(options) {
   );
 }
 
+//
+// Extend fossa with an EventEmitter.
+//
+fuse(Fossa, require('eventemitter3'));
+
 /**
  * Initialize a MongoClient and Server.
  *
@@ -78,11 +83,11 @@ function Fossa(options) {
  * @return {Fossa} fluent interface
  * @api public
  */
-Fossa.prototype.init = function init(host, port, options) {
+Fossa.readable('init', function init(host, port, options) {
   this.mongoclient = new MongoClient(new Server(host, port, options));
 
   return this;
-};
+});
 
 /**
  * Connect to MongoDb, otherwise return already opened connection.
@@ -93,7 +98,7 @@ Fossa.prototype.init = function init(host, port, options) {
  * @return {Fossa} fluent interface
  * @api public
  */
-Fossa.prototype.connect = function connect(database, collection, done) {
+Fossa.readable('connect', function connect(database, collection, done) {
   var fossa = this;
 
   //
@@ -140,7 +145,7 @@ Fossa.prototype.connect = function connect(database, collection, done) {
   });
 
   return this;
-};
+});
 
 /**
  * Close the connection with the database.
@@ -149,11 +154,11 @@ Fossa.prototype.connect = function connect(database, collection, done) {
  * @return {Fossa} fluent interface
  * @api public
  */
-Fossa.prototype.close = function close(done) {
+Fossa.readable('close', function close(done) {
   this.client.close(done);
 
   return this;
-};
+});
 
 /**
  * Switch to the supplied collection.
@@ -163,7 +168,7 @@ Fossa.prototype.close = function close(done) {
  * @return {Fossa} fluent interface
  * @api public
  */
-Fossa.prototype.collection = function collection(name, done) {
+Fossa.readable('collection', function collection(name, done) {
   var fossa = this;
 
   this.client.collection(name, function switched(error, collection) {
@@ -174,7 +179,7 @@ Fossa.prototype.collection = function collection(name, done) {
   });
 
   return this;
-};
+});
 
 /**
  * Fetch documents from MongoDB and initialize a collection.
@@ -184,7 +189,7 @@ Fossa.prototype.collection = function collection(name, done) {
  * @param {Function} done callback.
  * @api public
  */
-Fossa.prototype.get = function get(db, collection, done) {
+Fossa.readable('get', function get(db, collection, done) {
   var fossa = this;
 
   this.connect(db, collection, function connected(error, client) {
@@ -196,7 +201,7 @@ Fossa.prototype.get = function get(db, collection, done) {
       return (null, new fossa.Collection(results));
     });
   });
-};
+});
 
 /**
  * Register a new plugin.
@@ -211,7 +216,7 @@ Fossa.prototype.get = function get(db, collection, done) {
  * @param {Function} plugin The plugin with function that holds alternative logic
  * @api public
  */
-Fossa.prototype.use = function use(name, plugin) {
+Fossa.readable('use', function use(name, plugin) {
   if ('object' === typeof name && !plugin) {
     plugin = name;
     name = plugin.name;
@@ -231,7 +236,7 @@ Fossa.prototype.use = function use(name, plugin) {
   plugin.call(this, this, this.options);
 
   return this;
-};
+});
 
 /**
  * Create a new Fossa server.
