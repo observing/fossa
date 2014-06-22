@@ -131,7 +131,7 @@ describe('Fossa Model', function () {
     });
 
     it('returns 0 when updating a non-existant model in MongoDB', function (done) {
-      var model = new fossa.Model({ username: 'test' });
+      var model = (new fossa.Model).set({ username: 'test' });
 
       model
         .define('urlRoot','users')

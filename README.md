@@ -19,6 +19,11 @@ interface for interaction with the objects in MongoDB.
 npm install fossa --save
 ```
 
+## Versioning
+
+Fossa's version is synced to MongoDB releases (since 2.6.0). For instance, version
+2.6.x will be compatible with MongDB 2.6 and patch releases.
+
 ## Documentation
 
 The API of fossa is 1:1 compatible with backbone. For a good reference of available
