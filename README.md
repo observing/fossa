@@ -19,6 +19,10 @@ interface for interaction with the objects in MongoDB.
 npm install fossa --save
 ```
 
+## Examples
+
+**Will follow asap**
+
 ## Versioning
 
 Fossa's version is synced to MongoDB releases (since 2.6.0). For instance, version
@@ -255,6 +259,7 @@ var User = fossa.Model.extend({
 
 **Fossa.Model instance**
 - [Model.sync](#modelsync)
+- [Model.save](#modelsave)
 - [Model.isNew](#modelisnew)
 
 #### Model.idAttribute
@@ -293,6 +298,21 @@ a `_stored` property.
 user.sync('create', user, {}).done(function done(err, result) {
   console.log(result);
 });
+```
+
+#### Model.save
+
+The default model.save is overwritten. This is done to ensure an XHR object is
+returned from the method. otherwise if validation fails, `false` would be
+returned. Other than that the `save` method proxies to the default method. In
+other words you can now do the following without worrying about the return value.
+
+If the validation fails, an error is returned.
+
+```
+user.save().done(function done(error, result) {
+  console.log(error);
+})
 ```
 
 #### Model.isNew
