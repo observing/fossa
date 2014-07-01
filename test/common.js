@@ -6,7 +6,7 @@ var chai = require('chai')
   , sinonChai = require('sinon-chai');
 
 chai.use(sinonChai);
-chai.Assertion.includeStack = true;
+chai.config.includeStack = true;
 
 //
 // Expose Fossa and submodules.
