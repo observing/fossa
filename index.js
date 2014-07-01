@@ -50,7 +50,9 @@ function Fossa(options) {
   //
   // Store the options.
   //
+  this.writable('queue', []);
   this.writable('plugins', {});
+  this.writable('connecting', false);
   this.readable('options', configure(options || {}, this));
 
   //
@@ -99,7 +101,8 @@ Fossa.readable('init', function init(host, port, options) {
  * @api public
  */
 Fossa.readable('connect', function connect(database, collection, done) {
-  var fossa = this;
+  var fossa = this
+    , request;
 
   //
   // If no collection string is supplied it must be a callback.
@@ -115,33 +118,64 @@ Fossa.readable('connect', function connect(database, collection, done) {
   if (!database) done(new Error('Provide database name with #use before saving.'));
 
   //
-  // If there is a connected client simply switch the pool over to another database.
+  // Fastest method, the client was already connected to MongoDB,
+  // so we can easily switch to he correct database and collection.
   //
-  if (fossa.client) {
-    return process.nextTick(function switchClient() {
-      fossa.client = fossa.client.db(database);
-
-      //
-      // If a collection was supplied defer in a safe manner.
-      //
-      if (collection) return fossa.collection(collection, done);
-      done(null, fossa.client);
-    });
+  if (this.mongoclient._db.openCalled && !this.connecting) {
+    return this.switch.apply(this, arguments);
   }
 
   //
-  // Open a new connection to a MongoDB instance.
+  // If we are still connecting to the database, queue the current connect request.
   //
-  fossa.mongoclient.open(function(error, client) {
-    if (error) return done(error);
+  request = [ database, collection, done ];
+  if (this.connecting) return this.queue.push(request);
 
-    fossa.client = client.db(database);
+  //
+  // Open a new connection to a MongoDB instance, also queue the first request
+  // so that it can be processed after the connection is opened.
+  //
+  this.queue.push(request);
+  return this.open(function connected(error, client) {
+    if (error) return fossa.emit('error', error);
 
-    //
-    // If a collection was supplied defer in a safe manner.
-    //
-    if (collection) return fossa.collection(collection, done);
-    done(error, fossa.client);
+    fossa.queue.forEach(function loop(request) {
+      fossa.switch.apply(fossa, request);
+    });
+  });
+});
+
+/**
+ * Provide a properly configured MongoDB client to the callback.
+ *
+ * @param {String} database name
+ * @param {String} collection name
+ * @param {Function} done Completion callback
+ * @api private
+ */
+Fossa.readable('switch', function switching(database, collection, done) {
+  var client = this.mongoclient.db(database);
+
+  //
+  // If a collection was supplied, also switch to the collection.
+  //
+  if (collection) return this.collection(client, collection, done);
+  done(null, client);
+});
+
+/**
+ * Open a connection to MongoDB.
+ *
+ * @param {Function} done Completion callback.
+ * @return {Fossa} fluent interface
+ */
+Fossa.readable('open', function open(done) {
+  var fossa = this;
+
+  this.connecting = true;
+  fossa.mongoclient.open(function opened(error, client) {
+    fossa.connecting = false;
+    done(error, client);
   });
 
   return this;
@@ -155,7 +189,7 @@ Fossa.readable('connect', function connect(database, collection, done) {
  * @api public
  */
 Fossa.readable('close', function close(done) {
-  this.client.close(done);
+  this.mongoclient.close(done);
 
   return this;
 });
@@ -163,18 +197,18 @@ Fossa.readable('close', function close(done) {
 /**
  * Switch to the supplied collection.
  *
+ * @param {MongoClient} client Initialized connection.
  * @param {String} name collection name
  * @param {Function} done callback
  * @return {Fossa} fluent interface
  * @api public
  */
-Fossa.readable('collection', function collection(name, done) {
+Fossa.readable('collection', function collection(client, name, done) {
   var fossa = this;
 
-  this.client.collection(name, function switched(error, collection) {
+  client.collection(name, function switched(error, collection) {
     if (error) return done(error);
 
-    fossa.client.store = collection;
     done(error, collection);
   });
 

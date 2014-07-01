@@ -28,8 +28,11 @@ describe('Fossa Model', function () {
     fossa = new Fossa;
   });
 
-  afterEach(function () {
-    fossa = null;
+  afterEach(function (done) {
+    fossa.close(function () {
+      fossa = null;
+      done();
+    });
   });
 
   it('is extendable', function () {

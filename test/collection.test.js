@@ -30,9 +30,12 @@ describe('Fossa Collection', function () {
     Users = fossa.Collection.extend({ url: 'users' });
   });
 
-  afterEach(function () {
-    fossa = null;
-    Users = null;
+  afterEach(function (done) {
+    fossa.close(function () {
+      fossa = null;
+      Users = null;
+      done();
+    });
   });
 
   it('is extendable', function () {

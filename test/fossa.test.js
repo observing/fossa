@@ -21,8 +21,11 @@ describe('Fossa constructor', function () {
     db = new Fossa;
   });
 
-  afterEach(function () {
-    db = null;
+  afterEach(function (done) {
+    db.close(function () {
+      db = null;
+      done();
+    });
   });
 
   it('exposes constructor', function () {
@@ -66,28 +69,105 @@ describe('Fossa constructor', function () {
 
   describe('#connect', function () {
     it('to mongoDB or returns opened connection from the pool', function (done) {
-      expect(db.client).to.equal(undefined);
-      db.connect('fossa', function () {
-        expect(db.client).to.be.an('object');
+      db.connect('fossa', function (error, client) {
+        expect(error).to.equal(null);
+        expect(client).to.be.an('object');
+        expect(client).to.have.property('databaseName', 'fossa');
+        expect(client).to.have.property('serverConfig');
         done();
       });
     });
 
+    it('throws an error if the database name is missing', function () {
+      db.connect(null, function (error, client) {
+        expect(error).to.be.instanceof(Error);
+        expect(error).to.be.an('object');
+        expect(error.message).to.be.include('database name with #use before');
+        expect(client).to.equal(undefined);
+      });
+    });
+
+    it('pushes additional connection request to the queue if connection is opening', function () {
+      db.connect('fossa', function noop() { });
+
+      expect(db.queue).to.be.an('array');
+      expect(db.queue).to.have.length(1);
+      expect(db.connecting).to.equal(true);
+
+      db.connect('fossa', function (error, client) {
+        expect(error).to.equal(null);
+        expect(client).to.be.an('object');
+      });
+    });
+
     it('switches to the proper collection', function (done) {
-      expect(db.client).to.equal(undefined);
-      db.connect('fossa', 'test', function () {
-        db.client.store.findOne({b:1}, function (err, item) {
+      db.connect('fossa', 'test', function (error, client) {
+        client.findOne({b:1}, function (err, item) {
           expect(err).to.equal(null);
           expect(item.b).to.equal(1);
 
-          db.connect('fossa', 'test1', function (err, item) {
-            db.client.store.findOne({f:1}, function (err, item) {
+          db.connect('fossa', 'test1', function (error, client) {
+            client.findOne({f:1}, function (err, item) {
               expect(err).to.equal(null);
               expect(item.f).to.equal(1);
               done();
             });
           });
         });
+      });
+    });
+  });
+
+  describe('#switch', function () {
+    it('provides connection configured against database', function (done) {
+      db.switch('test', null, function switched(error, client) {
+        expect(error).to.equal(null);
+        expect(client).to.be.an('object');
+        expect(client).to.have.property('databaseName', 'test');
+        done();
+      });
+    });
+
+    it('provides connection configured against optional collection', function (done) {
+      db.switch('another', 'customCollection', function switched(error, client) {
+        expect(error).to.equal(null);
+        expect(client).to.be.an('object');
+        expect(client).to.have.property('collectionName', 'customCollection');
+        expect(client.db).to.be.an('object');
+        expect(client.db).to.have.property('databaseName', 'another');
+        done();
+      });
+    });
+  });
+
+  describe('#open', function () {
+    it('opens a connection', function (done) {
+      db.open(function (error, client) {
+        expect(error).to.equal(null);
+        expect(client).to.be.an('object');
+        expect(client).to.have.property('_db');
+        expect(client._db).to.have.property('openCalled', true);
+        expect(db.connecting).to.equal(false);
+        done();
+      });
+    });
+
+    it('keeps connecting state to prevent double `open` calls', function () {
+      db.open(function (error, client) {
+        expect(db.connecting).to.equal(false);
+        done();
+      });
+
+      expect(db.connecting).to.equal(true);
+    });
+  });
+
+  describe('#close', function () {
+    it('closes the active connection on mongoclient', function (done) {
+      db.close(function (error, result) {
+        expect(error).to.equal(null);
+        expect(result).to.equal(undefined);
+        done();
       });
     });
   });
@@ -128,10 +208,9 @@ describe('Fossa constructor', function () {
 
   describe('#collection', function () {
     it('switches the current active collection on the client', function (done) {
-      db.connect('fossa', function () {
-        db.collection('test', function () {
-          expect(db.client.store).to.be.an('object');
-          db.client.store.findOne({b:1}, function (err, item) {
+      db.connect('fossa', function (error, client) {
+        db.collection(client, 'test', function (error, collection) {
+          collection.findOne({b:1}, function (err, item) {
             expect(err).to.equal(null);
             expect(item.b).to.equal(1);
             done();
