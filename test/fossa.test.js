@@ -100,6 +100,18 @@ describe('Fossa constructor', function () {
       });
     });
 
+    it('will return database client if called without collection after connection is opened', function (done) {
+      db.connect('fossa', function (error, client) {
+        db.connect('test', function (error, another) {
+          expect(error).to.equal(null);
+          expect(another).to.be.an('object');
+          expect(another).to.have.property('databaseName', 'test');
+          expect(another).to.have.property('serverConfig');
+          done();
+        });
+      });
+    });
+
     it('switches to the proper collection', function (done) {
       db.connect('fossa', 'test', function (error, client) {
         client.findOne({b:1}, function (err, item) {

@@ -122,7 +122,7 @@ Fossa.readable('connect', function connect(database, collection, done) {
   // so we can easily switch to he correct database and collection.
   //
   if (this.mongoclient._db.openCalled && !this.connecting) {
-    return this.switch.apply(this, arguments);
+    return this.switch(database, collection, done);
   }
 
   //
