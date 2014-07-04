@@ -93,7 +93,7 @@ describe('Fossa Model', function () {
   });
 
   describe('#sync', function () {
-    it('can be stored in MongoDB by sync with urlRoot property', function (done) {
+    it('stores model in MongoDB with urlRoot property', function (done) {
       var model = new fossa.Model({ username: 'test' });
 
       model
@@ -106,6 +106,55 @@ describe('Fossa Model', function () {
             expect(item).to.have.property('_id');
             expect(item._id.toString()).to.equal(model.id.toString());
             expect(item).to.have.property('username', 'test');
+            done();
+          });
+        });
+    });
+
+    it('stores models with models as property (recursive) in MongoDB', function (done) {
+      var model = new fossa.Model({
+        username: 'test',
+        recursive: new fossa.Model({
+          password: 'check'
+        })
+      });
+
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .sync()
+        .done(function synced(err, result) {
+          db.collection('users').findOne({ _id: model.id }, function (err, item) {
+            expect(err).to.equal(null);
+            expect(item).to.be.an('object');
+            expect(item).to.have.property('username', 'test');
+            expect(item).to.have.property('recursive');
+            expect(item.recursive).to.be.an('object');
+            expect(item.recursive).to.have.property('password', 'check');
+            done();
+          });
+        });
+    });
+
+    it('stores models with collections as property in (recursive) MongoDB', function (done) {
+      var model = new fossa.Model({
+        username: 'test',
+        someCollection: new fossa.Collection([{
+          password: 'check'
+        }])
+      });
+
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .sync()
+        .done(function synced(err, result) {
+          db.collection('users').findOne({ _id: model.id }, function (err, item) {
+            expect(err).to.equal(null);
+            expect(item).to.be.an('object');
+            expect(item).to.have.property('someCollection');
+            expect(item.someCollection).to.be.an('array');
+            expect(item.someCollection[0]).to.have.property('password', 'check');
             done();
           });
         });
@@ -127,6 +176,56 @@ describe('Fossa Model', function () {
               expect(item).to.have.property('_id');
               expect(item._id.toString()).to.equal(id.toString());
               expect(item).to.have.property('username', 'changed');
+              done();
+            });
+          });
+      });
+    });
+
+    it('updates a model containing another model', function (done) {
+      var model = new fossa.Model({ username: 'test' })
+        , id = model.id;
+
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .sync()
+        .done(function synced(err, result) {
+          model.set('recursive', new fossa.Model({ imrecursive: 'yup' }));
+          model.sync('update').done(function synced(err, result) {
+            db.collection('users').findOne({ _id: id }, function (err, item) {
+              expect(err).to.equal(null);
+              expect(item).to.have.property('_id');
+              expect(item._id.toString()).to.equal(id.toString());
+              expect(item).to.have.property('username', 'test');
+              expect(item).to.have.property('recursive');
+              expect(item.recursive).to.be.an('object');
+              expect(item.recursive).to.have.property('imrecursive', 'yup');
+              done();
+            });
+          });
+      });
+    });
+
+    it('updates a model containing a collection', function (done) {
+      var model = new fossa.Model({ username: 'test' })
+        , id = model.id;
+
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .sync()
+        .done(function synced(err, result) {
+          model.set('collection', new fossa.Collection([{ imrecursive: 'yup' }]));
+          model.sync('update').done(function synced(err, result) {
+            db.collection('users').findOne({ _id: id }, function (err, item) {
+              expect(err).to.equal(null);
+              expect(item).to.have.property('_id');
+              expect(item._id.toString()).to.equal(id.toString());
+              expect(item).to.have.property('username', 'test');
+              expect(item).to.have.property('collection');
+              expect(item.collection).to.be.an('array');
+              expect(item.collection[0]).to.have.property('imrecursive', 'yup');
               done();
             });
           });

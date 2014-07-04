@@ -3,7 +3,6 @@ describe('Fossa Collection', function () {
 
   var common = require('./common')
     , ObjectID = require('mongodb').ObjectID
-    , _ = require('lodash')
     , expect = common.expect
     , Fossa = common.Fossa
     , db = common.db
@@ -82,7 +81,9 @@ describe('Fossa Collection', function () {
         expect(error).to.equal(null);
         expect(results).to.be.an('array');
         db.collection('users').find().toArray(function (err, items) {
-          var flat = _.pluck(items, '_id').map(String);
+          var flat = items.map(function map(item) {
+            return item._id;
+          }).map(String);
           expect(err).to.equal(null);
           expect(items).to.be.an('array');
           expect(items[0]).to.have.property('_id');
@@ -94,6 +95,31 @@ describe('Fossa Collection', function () {
       });
     });
 
+    it('stores collection with models that have models (recursive) in MongoDB', function (done) {
+      var collection = new fossa.Collection([{ username: 'first' }, {
+        username: 'test',
+        recursive: new fossa.Model({
+          password: 'check'
+        })
+      }]);
+
+      collection
+        .define('urlRoot','recursive')
+        .use('fossa')
+        .sync()
+        .done(function synced(err, result) {
+          db.collection('recursive').find().toArray(function (err, items) {
+            expect(err).to.equal(null);
+            expect(items).to.be.an('array');
+            expect(items[0]).to.have.property('username', 'first');
+            expect(items[1]).to.have.property('recursive');
+            expect(items[1].recursive).to.be.an('object');
+            expect(items[1].recursive).to.have.property('password', 'check');
+            done();
+          });
+        });
+    });
+
     it('deletes all models from the collection', function (done) {
       var o1 = new fossa.Model
         , o2 = new fossa.Model
@@ -103,7 +129,9 @@ describe('Fossa Collection', function () {
         users.sync('delete').done(function (error, results) {
           expect(results).to.equal(2);
           db.collection('users').find().toArray(function (err, items) {
-            var flat = _.pluck(items, '_id').map(String);
+            var flat = items.map(function map(item) {
+              return item._id;
+            }).map(String);
             expect(items).to.not.include(o1.id.toString());
             expect(items).to.not.include(o2.id.toString());
             done();
@@ -127,17 +155,38 @@ describe('Fossa Collection', function () {
 
     it('updates models from the collection', function (done) {
       var Test = fossa.Collection.extend({ url: 'test' })
+        , test = new Test([{ username: 'first'}], { database: 'fossa' });
+
+      test.sync().done(function (error, results) {
+        var model = test.at(0).set('username', 'test')
+          , id = model.id;
+
+        test.sync('update').done(function () {
+          db.collection('test').findOne({ _id: id }, function (err, item) {
+            expect(item).to.have.property('username', 'test');
+            expect(item).to.have.property('_id');
+            expect(item._id.toString()).to.equal(id.toString());
+            done();
+          });
+        });
+      });
+    });
+
+    it('updates entire collection with recursive models', function (done) {
+      var Test = fossa.Collection.extend({ url: 'test' })
         , test = new Test({ database: 'fossa' });
 
       test.sync('read').done(function (error, results) {
         var model = test.findWhere({a: 1});
-        model.set('username', 'test');
+        model.set('recursive', new fossa.Model({ model: 'insidemodelinsidecollection' }));
 
         test.sync('update').done(function () {
           db.collection('test').findOne({a: 1}, function (err, item) {
-            expect(item).to.have.property('username', 'test');
+            expect(item).to.have.property('recursive');
             expect(item).to.have.property('_id');
             expect(item._id.toString()).to.equal(model.id.toString());
+            expect(item.recursive).to.be.an('object');
+            expect(item.recursive).to.have.property('model', 'insidemodelinsidecollection');
             done();
           });
         });

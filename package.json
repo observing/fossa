@@ -1,6 +1,6 @@
 {
   "name": "fossa",
-  "version": "2.6.3",
+  "version": "2.6.4",
   "description": "Backbone powered model interface to MongoDB, thin wrapper around MongoJS",
   "main": "index.js",
   "scripts": {
@@ -31,7 +31,6 @@
     "eventemitter3": "~0.1.2",
     "extendable": "~0.0.6",
     "fusing": "~0.3.0",
-    "lodash": "~2.4.0",
     "mongodb": "~1.4.5",
     "predefine": "~0.1.1"
   },
