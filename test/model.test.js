@@ -136,6 +136,30 @@ describe('Fossa Model', function () {
         });
     });
 
+    it('deletes the recursive models ObjectId, model state stored elsewhere is ambigious', function (done) {
+      var model = new fossa.Model({
+        username: 'test',
+        recursive: new fossa.Model({
+          password: 'check'
+        })
+      });
+
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .sync()
+        .done(function synced(err, result) {
+          db.collection('users').findOne({ _id: model.id }, function (err, item) {
+            expect(err).to.equal(null);
+            expect(item).to.have.property('recursive');
+            expect(item).to.have.property('_id');
+            expect(item._id.toString()).to.equal(model.id.toString());
+            expect(item.recursive._id).to.equal(undefined);
+            done();
+          });
+        });
+    });
+
     it('stores models with collections as property in (recursive) MongoDB', function (done) {
       var model = new fossa.Model({
         username: 'test',
