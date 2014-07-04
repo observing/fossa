@@ -182,6 +182,7 @@ var accounts = new Accounts;
 **Fossa.Collection instance**
 - [Collection.id](#collectionid)
 - [Collection.sync](#collectionsync)
+- [Collection.clone](#collectionclone)
 
 Fossa Collections have no required keys. However, before saving models a
 database should always be provided.
@@ -241,6 +242,18 @@ account.sync('create', account, {}).done(function done(err, result) {
 });
 ```
 
+#### Collection.clone
+
+Duplicated behavior of the original `Collection.clone` method. With the exception
+that options are provided to restore the `url` and `database` properties on the
+object. This is done to ensure `sync` works with fresh objects and does not
+affect the used models.
+
+```js
+var users = new fossa.Collection([{ firstname: 'Davy' }, { firstname: 'Jones' }])
+  , otherGroup = users.clone();
+```
+
 ### Model
 
 Fossa will expose a Backbone `Model`, which can be extended with additional
@@ -261,6 +274,7 @@ var User = fossa.Model.extend({
 - [Model.sync](#modelsync)
 - [Model.save](#modelsave)
 - [Model.isNew](#modelisnew)
+- [Model.clone](#modelclone)
 
 #### Model.idAttribute
 
@@ -324,6 +338,19 @@ stored in the database.
 ```js
 var stored = user.isNew();
 ```
+
+#### Model.clone
+
+Duplicated behavior of the original `Model.clone` method. With the exception
+that options are provided to restore the `urlRoot` and `database` properties on
+the object. This is done to ensure `sync` works with fresh objects and does not
+affect the model.
+
+```js
+var user = new fossa.Model({ firstname: 'Davy', lastname: 'Jones' })
+  , otherUser = user.clone();
+```
+
 
 ## Tests
 

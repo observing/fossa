@@ -67,8 +67,14 @@ describe('Fossa Collection', function () {
 
   it('can be provided with a database options', function () {
     var collection = new fossa.Collection({ database: 'fossa' });
-    expect(collection._database).to.equal('fossa');
-    expect(collection._database).to.be.a('string');
+    expect(collection.database).to.equal('fossa');
+    expect(collection.database).to.be.a('string');
+  });
+
+  describe('#clone', function () {
+    it('returns complete copy of the Collection');
+    it('sets the url property');
+    it('sets the database property');
   });
 
   describe('#sync', function () {
@@ -95,6 +101,8 @@ describe('Fossa Collection', function () {
       });
     });
 
+    it('clones the provided models in the collection to prevent object contamination');
+
     it('stores collection with models that have models (recursive) in MongoDB', function (done) {
       var collection = new fossa.Collection([{ username: 'first' }, {
         username: 'test',
@@ -104,7 +112,7 @@ describe('Fossa Collection', function () {
       }]);
 
       collection
-        .define('urlRoot','recursive')
+        .define('url','recursive')
         .use('fossa')
         .sync()
         .done(function synced(err, result) {

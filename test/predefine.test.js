@@ -52,7 +52,7 @@ describe('Predefine', function () {
 
     expect(model).to.have.property('use');
     expect(model.use).to.be.a('function');
-    expect(model).to.have.property('_database', 'observer');
+    expect(model).to.have.property('database', 'observer');
     expect(returns).to.be.instanceof(Base);
   });
 

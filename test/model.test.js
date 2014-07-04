@@ -88,8 +88,14 @@ describe('Fossa Model', function () {
 
   it('can be provided with a database options', function () {
     var model = new fossa.Model({}, { database: 'fossa' });
-    expect(model._database).to.equal('fossa');
-    expect(model._database).to.be.a('string');
+    expect(model.database).to.equal('fossa');
+    expect(model.database).to.be.a('string');
+  });
+
+  describe('#clone', function () {
+    it('returns complete copy of the Model');
+    it('sets the urlRoot property');
+    it('sets the database property');
   });
 
   describe('#sync', function () {
@@ -110,6 +116,8 @@ describe('Fossa Model', function () {
           });
         });
     });
+
+    it('clones the provided model to prevent object contamination');
 
     it('stores models with models as property (recursive) in MongoDB', function (done) {
       var model = new fossa.Model({
