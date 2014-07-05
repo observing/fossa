@@ -275,6 +275,7 @@ var User = fossa.Model.extend({
 - [Model.save](#modelsave)
 - [Model.isNew](#modelisnew)
 - [Model.clone](#modelclone)
+- [Model.stored](#modelstored)
 
 #### Model.idAttribute
 
@@ -351,6 +352,19 @@ var user = new fossa.Model({ firstname: 'Davy', lastname: 'Jones' })
   , otherUser = user.clone();
 ```
 
+#### Model.stored
+
+Simple helper to update the `_stored` property of the model. If no argument is
+passed the model will be tagged as stored. Pass `false` to set the stored state
+to `false`. Under normal circumstances this method should not be called. `sync`
+will handle updates to the `_stored` property.
+
+- **state**: _{Boolean}_ optional pass explicit false to set stored to false
+
+```js
+user.stored();          // Model will be tagged as stored.
+user.stored(false);     // Model will be tagged as not stored.
+```
 
 ## Tests
 

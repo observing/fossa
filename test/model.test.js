@@ -333,6 +333,8 @@ describe('Fossa Model', function () {
         });
     });
 
+    it('updates the _stored reference of a deleted model');
+
     it('gets the current state of the model from the database with READ', function (done) {
       var model = new fossa.Model({ username: 'fetch' });
 

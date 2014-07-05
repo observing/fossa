@@ -101,6 +101,23 @@ describe('Fossa Collection', function () {
       });
     });
 
+    it('inserted models will have _stored property', function (done) {
+      var o1 = new fossa.Model
+        , o2 = new fossa.Model
+        , users = new Users([o1, o2], { database: 'fossa' });
+
+      users.sync().done(function (error, results) {
+        expect(error).to.equal(null);
+        expect(results).to.be.an('array');
+        expect(o1).to.have.property('_stored', true);
+        expect(o2).to.have.property('_stored', true);
+        expect(users).to.not.have.property('_stored');
+        expect(users.at(0)).to.have.property('_stored', true);
+        expect(users.at(1)).to.have.property('_stored', true);
+        done();
+      });
+    });
+
     it('clones the provided models in the collection to prevent object contamination');
 
     it('stores collection with models that have models (recursive) in MongoDB', function (done) {
@@ -154,6 +171,10 @@ describe('Fossa Collection', function () {
 
       test.sync('read').done(function (error, results) {
         expect(results).to.be.an('array');
+        expect(results[0]).to.have.property('a', 1);
+        expect(results[1]).to.have.property('d', 1);
+        expect(results[0].b).to.equal(test.at(0).get('b'));
+        expect(results[1].c).to.equal(test.at(1).get('c'));
         expect(test.models).to.be.an('array');
         expect(test.models).to.have.length(2);
         expect(test.findWhere({a: 1})).to.be.an('object');
