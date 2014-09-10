@@ -104,6 +104,12 @@ describe('Fossa Model', function () {
     it('sets the database property');
   });
 
+  describe('#url', function () {
+    it('is a function');
+    it('overrides the default url functionality');
+    it('returns the urlRoot of the model');
+  });
+
   describe('#sync', function () {
     it('stores model in MongoDB with urlRoot property', function (done) {
       var model = new fossa.Model({ username: 'test' });
