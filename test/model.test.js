@@ -363,6 +363,43 @@ describe('Fossa Model', function () {
         });
     });
 
+    it('if option.parse is set the model is parsed before returning data with READ', function (done) {
+      var i = 0
+        , model = new (fossa.Model.extend({
+            parse: function parse(response, options) {
+              expect(response).to.be.an('object');
+              expect(response).to.have.property('username', 'first');
+
+              //
+              // Set was only applied to live model, but not synced, so on
+              // read, the value from the database: `first` will be returned.
+              //
+              expect(response.username).to.not.equal('username', 'new');
+              i++;
+
+              return {
+                username: 'different',
+                random: 'addition'
+              };
+            }
+          }))({ username: 'first' });
+
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .save()
+        .done(function synced(err, items) {
+          model.set('username', 'new').fetch().done(function (err, item) {
+            expect(err).to.equal(null);
+            expect(model.get('username')).to.equal('different');
+            expect(model.get('random')).to.equal('addition');
+            expect(i).to.equal(1);
+
+            done();
+          });
+        });
+    });
+
     it('can pass MongoDB options, per example fields to do a partial read', function (done) {
       var model = new fossa.Model({ username: 'fetch', email: 'stored@value' });
 
