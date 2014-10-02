@@ -130,6 +130,12 @@ describe('Fossa constructor', function () {
     });
   });
 
+  describe('#auth', function () {
+    it('is a function');
+    it('provides a convenience method to authenticate against a database');
+    it('returns the result of the authentication');
+  });
+
   describe('#switch', function () {
     it('provides connection configured against database', function (done) {
       db.switch('test', null, function switched(error, client) {

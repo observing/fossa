@@ -146,6 +146,22 @@ Fossa.readable('connect', function connect(database, collection, done) {
 });
 
 /**
+ * Convenience authentication helper.
+ *
+ * @param {String} database Authenticate against this database.
+ * @param {String} username
+ * @param {String} password
+ * @param {Function} done Completion callback.
+ * @api public
+ */
+Fossa.readable('auth', function auth(database, username, password, done) {
+  this.connect(database, function open(error, client) {
+    if (error) return done(error);
+    client.authenticate(username, password, done);
+  });
+});
+
+/**
  * Provide a properly configured MongoDB client to the callback.
  *
  * @param {String} database name
