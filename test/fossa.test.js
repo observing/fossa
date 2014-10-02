@@ -178,6 +178,9 @@ describe('Fossa constructor', function () {
 
       expect(db.connecting).to.equal(true);
     });
+
+    it('authenticates the connection if required');
+    it('defaults to admin database if no `db` key is provided');
   });
 
   describe('#close', function () {

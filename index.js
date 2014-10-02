@@ -146,7 +146,9 @@ Fossa.readable('connect', function connect(database, collection, done) {
 });
 
 /**
- * Convenience authentication helper.
+ * Convenience authentication helper, called by open to authenticate the
+ * current connection. Can also be used to easily authenticate a new user
+ * against another database.
  *
  * @param {String} database Authenticate against this database.
  * @param {String} username
@@ -155,10 +157,8 @@ Fossa.readable('connect', function connect(database, collection, done) {
  * @api public
  */
 Fossa.readable('auth', function auth(database, username, password, done) {
-  this.connect(database, function open(error, client) {
-    if (error) return done(error);
-    client.authenticate(username, password, done);
-  });
+  var client = this.mongoclient.db(database);
+  client.authenticate(username, password, done);
 });
 
 /**
@@ -180,18 +180,26 @@ Fossa.readable('switch', function switching(database, collection, done) {
 });
 
 /**
- * Open a connection to MongoDB.
+ * Open a connection to MongoDB and authenticate if required,
+ * e.g. username and password where provided as options.
  *
  * @param {Function} done Completion callback.
  * @return {Fossa} fluent interface
  */
 Fossa.readable('open', function open(done) {
-  var fossa = this;
+  var fossa = this
+    , db = this.options('db', 'admin')
+    , username = this.options('username')
+    , password = this.options('password');
 
   this.connecting = true;
   fossa.mongoclient.open(function opened(error, client) {
     fossa.connecting = false;
-    done(error, client);
+
+    if (error) return done(error);
+    if (!username || !password) return done(null, client);
+
+    fossa.auth(db, username, password, done);
   });
 
   return this;
