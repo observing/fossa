@@ -87,9 +87,16 @@ describe('Fossa Model', function () {
     expect(model.id).to.be.an.instanceof(ObjectID);
   });
 
-  it('sets a unique MongoDB ObjectID if ID is not of type ObjectID', function () {
+  it('sets a unique MongoDB ObjectID if ID is not resembling an ObjectID', function () {
     var model = new fossa.Model({ _id: 'falseID' });
     expect(model.id).to.be.an.instanceof(ObjectID);
+  });
+
+  it('accepts a string as ObjectID', function () {
+    var model = new fossa.Model({ _id: '543f7fc387875b2900939281' });
+
+    expect(model.id).to.be.an.instanceof(ObjectID);
+    expect(model.attributes._id).to.be.an.instanceof(ObjectID);
   });
 
   it('can be provided with a database options', function () {
