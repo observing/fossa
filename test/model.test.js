@@ -526,6 +526,24 @@ describe('Fossa Model', function () {
         });
     });
 
+    it('can be passed options to exclude certain fields for instance', function (done) {
+      var model = new fossa.Model({ username: 'fetch' });
+
+      model
+        .define('urlRoot','users')
+        .use('fossa')
+        .save()
+        .done(function synced(err, items) {
+          model.fetch({ username: 0 }).done(function (err, item) {
+            console.log(err, item);
+            expect(err).to.equal(null);
+            expect(item.username).to.equal(undefined);
+            expect(model.get('username')).to.not.equal(item.username);
+            done();
+          });
+        });
+    });
+
     it('does not fetch and update attributes when model is unsaved', function (done) {
       var model = new fossa.Model({ username: 'fetch' });
 
