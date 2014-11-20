@@ -535,7 +535,6 @@ describe('Fossa Model', function () {
         .save()
         .done(function synced(err, items) {
           model.fetch({ username: 0 }).done(function (err, item) {
-            console.log(err, item);
             expect(err).to.equal(null);
             expect(item.username).to.equal(undefined);
             expect(model.get('username')).to.not.equal(item.username);
@@ -608,6 +607,31 @@ describe('Fossa Model', function () {
           expect(items.length).to.equal(1);
           expect(items[0]).to.have.property('password', 'saltmypw');
           expect(items[0]).to.have.property('username', 'me@observe.it');
+          done();
+        });
+    });
+
+    it('which will set the value on the model if returned to the callback', function () {
+      var Model = fossa.Model.extend({
+            before: {
+              'create password': 'password'
+            },
+
+            password: function password(value, next) {
+              this.set('password', 'salt' + value);
+              next(null, 'completely different password');
+            }
+          })
+        , model = new Model({ password: 'mypw', username: 'me' });
+
+      model
+        .define('urlRoot', 'users')
+        .use('fossa')
+        .save()
+        .done(function synced(err, items) {
+          expect(err).to.equal(null);
+          expect(items.length).to.equal(1);
+          expect(items[0]).to.have.property('password', 'completely different password');
           done();
         });
     });
