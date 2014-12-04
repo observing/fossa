@@ -65,7 +65,7 @@ function Fossa(options) {
   // Prepare connection.
   //
   this.init(
-    this.options('host', 'localhost'),
+    this.options('hostname', 'localhost'),
     this.options('port', 27017),
     this.options
   );
@@ -79,14 +79,14 @@ fuse(Fossa, require('eventemitter3'));
 /**
  * Initialize a MongoClient and Server.
  *
- * @param {String} host MongoDB host
+ * @param {String} hostname MongoDB hostname
  * @param {Number} port MongoDB port, usually 27017
  * @param {Object} options MongoDB client options
  * @return {Fossa} fluent interface
  * @api public
  */
-Fossa.readable('init', function init(host, port, options) {
-  this.mongoclient = new MongoClient(new Server(host, port, options));
+Fossa.readable('init', function init(hostname, port, options) {
+  this.mongoclient = new MongoClient(new Server(hostname, port, options));
 
   return this;
 });
@@ -299,16 +299,16 @@ Fossa.readable('use', function use(name, plugin) {
 /**
  * Create a new Fossa server.
  *
- * @param {String} host Server location
+ * @param {String} hostname Server location
  * @param {Number} port Port number
  * @param {Object} options Configuration.
  * @returns {Fossa}
  * @api public
  */
-Fossa.create = function create(host, port, options) {
+Fossa.create = function create(hostname, port, options) {
   options = options || {};
 
-  options.host = host = host || 'localhost';
+  options.hostname = hostname = hostname || 'localhost';
   options.port = port = port || 27017;
   options.native_parser = true;
 
