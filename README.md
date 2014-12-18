@@ -378,3 +378,7 @@ npm test
 [mongodb]: https://github.com/christkv/node-mongodb-native/
 [objectid]: http://mongodb.github.io/node-mongodb-native/api-bson-generated/objectid.html
 [backbonesync]: http://backbonejs.org/#Sync
+
+## License
+
+Fossa is released under MIT.
