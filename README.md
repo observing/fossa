@@ -290,6 +290,15 @@ var User = fossa.Model.extend({
 });
 ```
 
+If you like to instantiate a Model with an existing id. For instance to fetch
+Model data already stored in the database, pass an ObjectId to `_id`.
+
+```js
+var User = new fossa.Model({
+  _id: new fossa.Model.ObjectId('5492adcaded9fc7b72f2ddae')
+});
+```
+
 #### Model._stored
 
 Keep track of the current state of the Model. If the `_id` of the Model changes,
