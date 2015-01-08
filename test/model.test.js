@@ -54,12 +54,6 @@ describe('Fossa Model', function () {
     expect(model.fossa).to.be.an.instanceof(Fossa);
   });
 
-  it('has a reference to ObjectID', function () {
-    expect(fossa.Model).to.have.property('ObjectID');
-    expect(fossa.Model.ObjectID).to.be.a('function');
-    expect(new fossa.Model.ObjectID).to.an.instanceof(fossa.Model.ObjectID);
-  });
-
   it('maps _id as internal id', function () {
     var id = new ObjectID
       , model = new fossa.Model({ _id: id });

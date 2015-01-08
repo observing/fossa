@@ -47,6 +47,8 @@ describe('Fossa constructor', function () {
 
   it('exposes reference to mongoDB driver', function () {
     expect(Fossa.mongo).to.be.a('function');
+    expect(db.mongo).to.be.a('function');
+    expect(db.mongo).to.equal(Fossa.mongo);
   });
 
   it('has queryable options with defaults', function () {

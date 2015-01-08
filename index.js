@@ -62,6 +62,11 @@ function Fossa(options) {
   this.readable('Collection', collection(this));
 
   //
+  // Provide reference to the orginal mongo module so it can be used easily.
+  //
+  this.readable('mongo', mongo);
+
+  //
   // Prepare connection.
   //
   this.init(
