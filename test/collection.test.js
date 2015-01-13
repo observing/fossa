@@ -2,7 +2,8 @@ describe('Fossa Collection', function () {
   'use strict';
 
   var common = require('./common')
-    , ObjectID = require('mongodb').ObjectID
+    , mongo = require('mongodb')
+    , ObjectID = mongo.ObjectID
     , expect = common.expect
     , Fossa = common.Fossa
     , db = common.db
@@ -248,6 +249,13 @@ describe('Fossa Collection', function () {
   });
 
   describe('#fetch', function () {
+    it('is a function', function () {
+      var users = new Users;
+
+      expect(users.fetch).to.be.a('function');
+      expect(users.fetch.length).to.equal(1);
+    });
+
     it('reads models from the database collection', function (done) {
       var Test = fossa.Collection.extend({ url: 'test1' })
         , test = new Test({ database: 'fossa' });
@@ -259,6 +267,37 @@ describe('Fossa Collection', function () {
         expect(test.findWhere({e: 1})).to.be.an('object');
         done();
       });
+    });
+
+    it('can be queried to read a subset of models from the database', function (done) {
+      var Test = fossa.Collection.extend({ url: 'test1' })
+        , test = new Test({ database: 'fossa' });
+
+      test.fetch({
+        query: { e: 1 }
+      }).done(function (error, results) {
+        expect(error).to.equal(null);
+        expect(results).to.be.an('array');
+        expect(test.models).to.be.an('array');
+        expect(test.models).to.have.length(1);
+        expect(test.findWhere({g: 1})).to.equal(undefined);
+        done();
+      });
+    });
+  });
+
+  describe('#plain', function () {
+    it('returns reference to the plain collection', function () {
+      var users = new Users({ database: 'test', url: 'users' });
+      expect(users.plain).to.be.an('object');
+      expect(users.plain).to.not.be.instanceof(Users);
+      expect(users.plain.db).to.be.an('object');
+      expect(users.plain).to.be.instanceof(mongo.Collection);
+    });
+
+    it('is a getter that returns false if the database or collection name are not set', function () {
+      var users = new Users;
+      expect(users.plain).to.equal(false);
     });
   });
 });

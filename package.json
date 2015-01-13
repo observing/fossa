@@ -1,11 +1,13 @@
 {
   "name": "fossa",
-  "version": "2.6.14",
+  "version": "2.6.15",
   "description": "Backbone powered model interface to MongoDB, thin wrapper around MongoJS",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test ./node_modules/.bin/mocha $(find test -name '*.test.js')",
-    "coverage": "NODE_ENV=test ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js || true && rm -rf ./coverage"
+    "test": "mocha $(find test -name '*.test.js')",
+    "watch": "mocha --watch $(find test -name '*.test.js')",
+    "coverage": "istanbul cover ./node_modules/.bin/_mocha -- $(find test -name '*.test.js')",
+    "test-travis": "istanbul cover node_modules/.bin/_mocha --report lcovonly -- $(find test -name '*.test.js')"
   },
   "repository": {
     "type": "git",
@@ -26,22 +28,20 @@
     "url": "https://github.com/observing/fossa/issues"
   },
   "dependencies": {
-    "async": "~0.9.0",
-    "backbone": "~1.1.0",
-    "eventemitter3": "~0.1.2",
-    "extendable": "~0.0.6",
-    "fusing": "~0.3.0",
-    "mongodb": "~1.4.5",
-    "predefine": "~0.1.1"
+    "async": "0.9.x",
+    "backbone": "1.1.x",
+    "eventemitter3": "0.1.x",
+    "extendible": "0.1.x",
+    "fusing": "1.0.x",
+    "mongodb": "1.4.x",
+    "predefine": "0.1.x"
   },
   "devDependencies": {
-    "coveralls": "~2.10.0",
-    "mocha-lcov-reporter": "~0.0.1",
-    "istanbul": "~0.2.6",
-    "chai": "~1.9.1",
-    "mocha": "~1.20.0",
-    "pre-commit": "~0.0.0",
-    "sinon": "~1.10.2",
-    "sinon-chai": "~2.5.0"
+    "chai": "1.10.x",
+    "istanbul": "0.3.x",
+    "mocha": "2.1.x",
+    "pre-commit": "0.0.x",
+    "sinon": "1.12.x",
+    "sinon-chai": "2.6.x"
   }
 }

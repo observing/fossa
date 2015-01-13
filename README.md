@@ -1,8 +1,11 @@
-# Fossa [![Build Status][status]](https://travis-ci.org/observing/fossa) [![NPM version][npmimgurl]](http://npmjs.org/package/fossa) [![Coverage Status][coverage]](http://coveralls.io/r/observing/fossa?branch=master)
+# Fossa
 
-[status]: https://travis-ci.org/observing/fossa.png?branch=master
-[npmimgurl]: https://badge.fury.io/js/fossa.png
-[coverage]: http://coveralls.io/repos/observing/fossa/badge.png?branch=master
+[![Version npm][version]](http://browsenpm.org/package/fossa)[![Build Status][build]](https://travis-ci.org/observing/fossa)[![Dependencies][david]](https://david-dm.org/observing/fossa)[![Coverage Status][cover]](https://coveralls.io/r/observing/fossa?branch=master)
+
+[version]: http://img.shields.io/npm/v/fossa.svg?style=flat-square
+[build]: http://img.shields.io/travis/observing/fossa/master.svg?style=flat-square
+[david]: https://img.shields.io/david/observing/fossa.svg?style=flat-square
+[cover]: http://img.shields.io/coveralls/observing/fossa/master.svg?style=flat-square
 
 Backbone powered model interface to MongoDB, thin wrapper around MongoDB. Fossa
 uses the API provided by [Backbone][backbone] and proxies it methods to the
