@@ -63,27 +63,10 @@ describe('Fossa Model', function () {
     expect(model.attributes).to.have.property('_id', id);
   });
 
-  it('refreshed stored reference on ID change', function (done) {
-    var model = new fossa.Model;
-
-    model.on('change:_id', function (model, id) {
-      expect(id).to.be.instanceof(ObjectID);
-      expect(model._stored).to.be.equal(false);
-      expect(model.id).to.be.equal(id);
-      done();
-    });
-
-    model.set('_id', new ObjectID);
-  });
-
-  it('sets a unique MongoDB ObjectID by default', function () {
-    var model = new fossa.Model;
-    expect(model.id).to.be.an.instanceof(ObjectID);
-  });
-
-  it('sets a unique MongoDB ObjectID if ID is not resembling an ObjectID', function () {
+  it('removes _id if it is not a valid ObjectID', function () {
     var model = new fossa.Model({ _id: 'falseID' });
-    expect(model.id).to.be.an.instanceof(ObjectID);
+    expect(model.id).to.not.be.instanceof(ObjectID);
+    expect(model.attributes._id).to.not.be.instanceof(ObjectID);
   });
 
   it('accepts a string as ObjectID', function () {
@@ -206,8 +189,7 @@ describe('Fossa Model', function () {
     });
 
     it('switches to PUT if the model with ObjectID exists', function (done) {
-      var model = new fossa.Model({ username: 'test' })
-        , id = model.id;
+      var model = new fossa.Model({ username: 'test' });
 
       model
         .define('urlRoot','users')
@@ -216,10 +198,10 @@ describe('Fossa Model', function () {
         .done(function synced(err, result) {
           model.set('username', 'changed');
           model.sync().done(function synced(err, result) {
-            db.collection('users').findOne({ _id: id }, function (err, item) {
+            db.collection('users').findOne({ _id: model.id }, function (err, item) {
               expect(err).to.equal(null);
               expect(item).to.have.property('_id');
-              expect(item._id.toString()).to.equal(id.toString());
+              expect(item._id.toString()).to.equal(model.id.toString());
               expect(item).to.have.property('username', 'changed');
               done();
             });
@@ -228,8 +210,7 @@ describe('Fossa Model', function () {
     });
 
     it('updates a model containing another model', function (done) {
-      var model = new fossa.Model({ username: 'test' })
-        , id = model.id;
+      var model = new fossa.Model({ username: 'test' });
 
       model
         .define('urlRoot','users')
@@ -238,10 +219,10 @@ describe('Fossa Model', function () {
         .done(function synced(err, result) {
           model.set('recursive', new fossa.Model({ imrecursive: 'yup' }));
           model.sync('update').done(function synced(err, result) {
-            db.collection('users').findOne({ _id: id }, function (err, item) {
+            db.collection('users').findOne({ _id: model.id }, function (err, item) {
               expect(err).to.equal(null);
               expect(item).to.have.property('_id');
-              expect(item._id.toString()).to.equal(id.toString());
+              expect(item._id.toString()).to.equal(model.id.toString());
               expect(item).to.have.property('username', 'test');
               expect(item).to.have.property('recursive');
               expect(item.recursive).to.be.an('object');
@@ -253,8 +234,7 @@ describe('Fossa Model', function () {
     });
 
     it('updates a model containing a collection', function (done) {
-      var model = new fossa.Model({ username: 'test' })
-        , id = model.id;
+      var model = new fossa.Model({ username: 'test' });
 
       model
         .define('urlRoot','users')
@@ -263,10 +243,10 @@ describe('Fossa Model', function () {
         .done(function synced(err, result) {
           model.set('collection', new fossa.Collection([{ imrecursive: 'yup' }]));
           model.sync('update').done(function synced(err, result) {
-            db.collection('users').findOne({ _id: id }, function (err, item) {
+            db.collection('users').findOne({ _id: model.id }, function (err, item) {
               expect(err).to.equal(null);
               expect(item).to.have.property('_id');
-              expect(item._id.toString()).to.equal(id.toString());
+              expect(item._id.toString()).to.equal(model.id.toString());
               expect(item).to.have.property('username', 'test');
               expect(item).to.have.property('collection');
               expect(item.collection).to.be.an('array');
@@ -287,7 +267,6 @@ describe('Fossa Model', function () {
         .done(function synced(err, result) {
           expect(err).to.equal(undefined);
           expect(result).to.equal(0);
-          expect(model._stored).to.equal(false);
           done();
         });
     });
@@ -345,8 +324,6 @@ describe('Fossa Model', function () {
             });
         });
     });
-
-    it('updates the _stored reference of a deleted model');
 
     it('gets the current state of the model from the database with READ', function (done) {
       var model = new fossa.Model({ username: 'fetch' });
@@ -440,7 +417,7 @@ describe('Fossa Model', function () {
 
     it('returns zero if no model was deleted', function (done) {
       var model = new fossa.Model({ username: 'not here' });
-      model._stored = true; // fake existance
+      model.id = true; // fake existance
 
       model
         .define('urlRoot','users')
@@ -520,7 +497,7 @@ describe('Fossa Model', function () {
         });
     });
 
-    it('can be passed options to exclude certain fields for instance', function (done) {
+    it('can be passed options to exclude certain fields', function (done) {
       var model = new fossa.Model({ username: 'fetch' });
 
       model
@@ -528,7 +505,7 @@ describe('Fossa Model', function () {
         .use('fossa')
         .save()
         .done(function synced(err, items) {
-          model.fetch({ username: 0 }).done(function (err, item) {
+          model.fetch(null, { username: 0 }).done(function (err, item) {
             expect(err).to.equal(null);
             expect(item.username).to.equal(undefined);
             expect(model.get('username')).to.not.equal(item.username);
@@ -537,10 +514,10 @@ describe('Fossa Model', function () {
         });
     });
 
-    it('does not fetch and update attributes when model is unsaved', function (done) {
+    it('does not fetch and update attributes when model has no query or _id', function (done) {
       var model = new fossa.Model({ username: 'fetch' });
 
-      model
+      model.set('_id', null)
         .define('urlRoot','users')
         .use('fossa')
         .fetch().done(function (err, item) {
@@ -549,6 +526,23 @@ describe('Fossa Model', function () {
           expect(model.isNew()).to.equal(true);
           expect(model.get('username')).to.equal('fetch');
           done();
+        });
+    });
+
+    it('can be queried to read a model from the database by a specific property', function (done) {
+      var model = new fossa.Model({ username: 'fetch' });
+
+      model
+        .define('urlRoot', 'users')
+        .use('fossa')
+        .save()
+        .done(function synced(err, items) {
+          model.set('_id', null).fetch({ username: 'fetch' }).done(function (err, item) {
+            expect(err).to.equal(null);
+            expect(item.username).to.equal('fetch');
+            expect(model.get('username')).to.equal(item.username);
+            done();
+          });
         });
     });
   });
@@ -739,7 +733,6 @@ describe('Fossa Model', function () {
             after: {
               'validate email': function unset(value) {
                 expect(value).to.equal('');
-                expect(this._stored).to.equal(false);
               }
             },
 
@@ -766,7 +759,6 @@ describe('Fossa Model', function () {
       var Model = fossa.Model.extend({
             after: {
               'read password': function password(value, next) {
-                expect(this).to.have.property('_stored', true);
                 this.unset('password');
                 next();
               }
@@ -795,7 +787,6 @@ describe('Fossa Model', function () {
       var Model = fossa.Model.extend({
             after: {
               'delete server': function server(value, next) {
-                expect(this).to.have.property('_stored', false);
                 this.unset('server');
                 next();
               }
@@ -831,7 +822,7 @@ describe('Fossa Model', function () {
 
             validate: function validate(attributes, options) {
               expect(attributes.email).to.equal('myemail@spaces.com');
-              expect(this._events).to.not.have.property('change:email');
+              expect(this).to.not.have.property('_events');
               done();
             }
           })

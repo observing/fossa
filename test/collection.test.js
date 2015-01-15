@@ -102,7 +102,7 @@ describe('Fossa Collection', function () {
       });
     });
 
-    it('inserted models will have _stored property', function (done) {
+    it('inserted models will have id property', function (done) {
       var o1 = new fossa.Model
         , o2 = new fossa.Model
         , users = new Users([o1, o2], { database: 'fossa' });
@@ -110,11 +110,11 @@ describe('Fossa Collection', function () {
       users.sync().done(function (error, results) {
         expect(error).to.equal(null);
         expect(results).to.be.an('array');
-        expect(o1).to.have.property('_stored', true);
-        expect(o2).to.have.property('_stored', true);
-        expect(users).to.not.have.property('_stored');
-        expect(users.at(0)).to.have.property('_stored', true);
-        expect(users.at(1)).to.have.property('_stored', true);
+        expect(o1).to.have.property('id', results[0]._id);
+        expect(o2).to.have.property('id', results[1]._id);
+        expect(users.id).to.be.a('function');
+        expect(users.at(0)).to.have.property('id', results[0]._id);
+        expect(users.at(1)).to.have.property('id', results[1]._id);
         done();
       });
     });
@@ -253,7 +253,7 @@ describe('Fossa Collection', function () {
       var users = new Users;
 
       expect(users.fetch).to.be.a('function');
-      expect(users.fetch.length).to.equal(1);
+      expect(users.fetch.length).to.equal(2);
     });
 
     it('reads models from the database collection', function (done) {
@@ -273,9 +273,7 @@ describe('Fossa Collection', function () {
       var Test = fossa.Collection.extend({ url: 'test1' })
         , test = new Test({ database: 'fossa' });
 
-      test.fetch({
-        query: { e: 1 }
-      }).done(function (error, results) {
+      test.fetch({ e: 1 }).done(function (error, results) {
         expect(error).to.equal(null);
         expect(results).to.be.an('array');
         expect(test.models).to.be.an('array');
